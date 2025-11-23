@@ -10,7 +10,9 @@ export interface DiscoveredDevice {
     ip: string;
 }
 
-export interface DeviceInfo {
+export type DeviceInfo = IDeviceInfo & { [key: string]: any }
+
+export interface IDeviceInfo {
     model_name: string;
     destination: string;
     device_id: string;
@@ -32,7 +34,10 @@ export interface AnalyticsInfo {
     uuid: string;
 }
 
-export interface ZoneStatus {
+
+export type ZoneStatus = IZoneStatus & { [key: string]: any }
+
+export interface IZoneStatus {
     power: string;
     sleep: number;
     volume: number;

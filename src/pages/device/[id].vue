@@ -1,20 +1,20 @@
 <script setup lang="ts">
 
 import {useAppStore} from "@/stores/app.ts";
-import {getSignalInfo, getZoneStatus} from "@/api/yamaha.ts";
-import {SignalInfo, ZoneStatus} from "@/models/yamaha.ts";
+import {getSignalInfo, getZoneStatus, toggleZonePower} from "@/ipc/yamaha.ts";
+import {SignalInfo, ZoneStatus} from "@/ipc/models.ts";
+import VolumeControl from "@/components/VolumeControl.vue";
 
 const app = useAppStore()
-const deviceId = useRoute().params.id
-const device = app.getDeviceById(deviceId)
+const deviceId = useRoute().params.id as string
+const device = app.getDeviceById(deviceId)!
 const deviceInfo = app.getDeviceInfo(deviceId).Ok!
-
-const DEVICE_INFO_FIELDS = ['model_name', 'serial_number', 'system_version']
-const ZONE_STATUS_FIELDS = ['power', 'input', 'input_text', 'sound_program', 'surr_decoder_type', 'pure_direct', 'enhancer', 'dialogue_level', 'dialogue_lift', 'subwoofer_volume', 'extra_bass', 'adaptive_drc', 'dts_dialogue_control', 'adaptive_dsp_level', 'party_enable']
 
 let timer: ReturnType<typeof setInterval>;
 let zoneStatus = ref<ZoneStatus>();
 let signalInfo = ref<SignalInfo>();
+
+const isOn = computed(() => zoneStatus.value?.power === 'on')
 
 async function refreshDeviceInfo() {
   zoneStatus.value = await getZoneStatus(deviceId)
@@ -23,52 +23,38 @@ async function refreshDeviceInfo() {
 
 onMounted(() => {
   refreshDeviceInfo()
-  timer = setInterval(() => refreshDeviceInfo(), 5000)
+  timer = setInterval(() => refreshDeviceInfo(), 1000)
 })
 
 onUnmounted(() => clearInterval(timer))
 
+function togglePower() {
+  toggleZonePower(deviceId).catch(console.error)
+}
+
 </script>
 
 <template>
-  <v-btn to="/">Back</v-btn>
-  <h1>{{ device.name }}</h1>
-  <h2>{{ device.ip }}</h2>
+  <div class="d-flex flex-column items-center justify-center ga-4 sm:ga-6 lg:ga-8 flex-grow-1">
+    <v-btn to="/">Back</v-btn>
+    <AvrCard :device="device" :info="deviceInfo" page-mode @togglePower="togglePower" :is-on="isOn"/>
 
-  <v-card>
-    <v-card-title>Device Info</v-card-title>
-    <v-card-text>
-      <v-row v-for="key in DEVICE_INFO_FIELDS" no-gutters>
-        <v-col>{{ key.replace('_', ' ') }}</v-col>
-        <v-col>{{ deviceInfo[key] }}</v-col>
-      </v-row>
-    </v-card-text>
-  </v-card>
+    <v-card>
+      <volume-control :zone-status="zoneStatus" :device-id="deviceId" :disabled="!isOn"/>
+    </v-card>
 
-  <v-card>
-    <v-card-title>Zone Status</v-card-title>
-    <v-card-text>
-      <v-row>
-        <v-col>
-          Volume
-        </v-col>
-        <v-col>
-          {{ `${zoneStatus?.actual_volume.value} ${zoneStatus?.actual_volume.unit}` }}
-        </v-col>
-      </v-row>
-      <v-row v-for="key in ZONE_STATUS_FIELDS" no-gutters>
-        <v-col>{{ key.replace('_', ' ') }}</v-col>
-        <v-col>{{ zoneStatus?.[key] }}</v-col>
-      </v-row>
-    </v-card-text>
-  </v-card>
+    <v-card>
+      <v-card-title>Zone Status</v-card-title>
+      <avr-settings :zone-status="zoneStatus" :device-id="deviceId" class="pa-3" :disabled="!isOn"/>
+    </v-card>
 
-  <v-card>
-    <v-card-title>Signal Info</v-card-title>
-    <v-card-text>
-      {{ signalInfo }}
-    </v-card-text>
-  </v-card>
+    <v-card>
+      <v-card-title>Signal Info</v-card-title>
+      <v-card-text>
+        {{ signalInfo }}
+      </v-card-text>
+    </v-card>
+  </div>
 </template>
 
 <style scoped>

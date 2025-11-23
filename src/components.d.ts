@@ -12,8 +12,11 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./components/AppFooter.vue')['default']
+    AvrCard: typeof import('./components/AvrCard.vue')['default']
+    AvrSettings: typeof import('./components/AvrSettings.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    VolumeControl: typeof import('./components/VolumeControl.vue')['default']
   }
 }
