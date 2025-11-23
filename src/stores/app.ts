@@ -27,9 +27,11 @@ export const useAppStore = defineStore('app', {
                 this.discoveredDevices = await discoverDevices()
                 console.log("Discovered devices:", this.discoveredDevices)
             } catch (ignored) {
+                console.error(ignored)
             } finally {
                 this.loaded = true
             }
+            await this.loadDeviceInfo()
         },
         async loadDeviceInfo() {
             if (this.deviceInfoLoaded) return
@@ -37,6 +39,11 @@ export const useAppStore = defineStore('app', {
             let info = await getAllDeviceInfo(ips)
             info.forEach((info, idx) => this.deviceInfo[ips[idx]] = info)
             this.deviceInfoLoaded = true
+        },
+        async refresh() {
+            this.loaded = false
+            this.deviceInfoLoaded = false
+            await this.init()
         },
         async getProgramList(ip: string) {
             if (this.deviceInfo[ip]?.Ok) {

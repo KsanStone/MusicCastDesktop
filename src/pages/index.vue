@@ -5,9 +5,7 @@ import {DiscoveredDevice} from "@/ipc/models.ts";
 const app = useAppStore()
 
 onMounted(() => {
-  app.init().then(() => {
-    app.loadDeviceInfo()
-  })
+  app.init()
 })
 
 const manageableDevices = computed(() => app.discoveredDevices
@@ -29,17 +27,25 @@ const otherDevices = computed(() => app.discoveredDevices.filter((device: Discov
     </v-empty-state>
   </div>
   <div v-else class="d-flex flex-column items-center ga-4 sm:ga-6 lg:ga-8 flex-grow-1">
-    <v-sheet class="px-4 py-2 text-h6 font-weight-medium position-sticky top-0 bg-surface rounded">
-      Discovered Devices
+    <v-sheet class="px-4 py-2 text-h6 font-weight-medium position-sticky top-0 bg-surface rounded d-flex flex-row align-center">
+      <span>Discovered Devices</span>
+      <v-spacer></v-spacer>
+      <v-btn icon="mdi-refresh" @click="app.refresh()"></v-btn>
     </v-sheet>
+    <div class="d-flex flex-column items-center ga-4 sm:ga-6 lg:ga-8" :class="{'flex-grow-1': app.discoveredDevices.length === 0}">
+      <v-empty-state v-if="app.discoveredDevices.length === 0"
+                     icon="mdi-magnify" title="No Devices Found"
+                     text="No Yamaha devices found in your network.">
+      </v-empty-state>
 
-    <AvrCard v-for="device in manageableDevices" :device="device" :info="app.getDeviceInfo(device.ip)?.Ok" />
-    <div class="d-flex align-center" v-if="otherDevices.length > 0 && manageableDevices.length > 0">
-      <v-divider class="flex-grow-1"></v-divider>
-      <span class="mx-3 text-caption text-medium-emphasis" style="white-space: nowrap;">Other Yamaha Devices</span>
-      <v-divider class="flex-grow-1"></v-divider>
+      <AvrCard v-for="device in manageableDevices" :device="device" :info="app.getDeviceInfo(device.ip)?.Ok"/>
+      <div class="d-flex align-center" v-if="otherDevices.length > 0 && manageableDevices.length > 0">
+        <v-divider class="flex-grow-1"></v-divider>
+        <span class="mx-3 text-caption text-medium-emphasis" style="white-space: nowrap;">Other Yamaha Devices</span>
+        <v-divider class="flex-grow-1"></v-divider>
+      </div>
+      <AvrCard v-for="device in otherDevices" :device="device"/>
     </div>
-    <AvrCard v-for="device in otherDevices" :device="device" />
   </div>
 </template>
 

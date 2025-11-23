@@ -15,6 +15,7 @@ declare module 'vue' {
     AvrCard: typeof import('./components/AvrCard.vue')['default']
     AvrSettings: typeof import('./components/AvrSettings.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
+    PlaybackCard: typeof import('./components/PlaybackCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     VolumeControl: typeof import('./components/VolumeControl.vue')['default']

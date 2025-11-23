@@ -22,6 +22,8 @@ const updateExtraBass = debounce(() => setExtraBass(props.deviceId, props.zoneSt
 const updateEnhancer = debounce(() => setEnhancer(props.deviceId, props.zoneStatus?.enhancer ?? false), DEBOUNCE_TIME)
 const updateSoundProgram = debounce(() => props.zoneStatus ? setSoundProgram(props.deviceId, props.zoneStatus.sound_program) : 0, DEBOUNCE_TIME)
 
+const capitalize = (text: string) => text.replace(/_/g, ' ').split(' ').map(x => x.length > 0 ? x.charAt(0).toUpperCase() + x.substring(1).toLowerCase() : x).join(' ')
+
 </script>
 
 <template>
@@ -30,7 +32,14 @@ const updateSoundProgram = debounce(() => props.zoneStatus ? setSoundProgram(pro
       <v-col>Sound Program</v-col>
       <v-col v-if="zoneStatus">
         <v-select :disabled="disabled" hide-details density="compact" variant="solo-filled" :items="availablePrograms"
-                  v-model="zoneStatus.sound_program" @update:model-value="updateSoundProgram"/>
+                  v-model="zoneStatus.sound_program" @update:model-value="updateSoundProgram">
+          <template v-slot:item="{ props: itemProps, item }">
+            <v-list-item v-bind="itemProps" :title="capitalize(item.raw)"></v-list-item>
+          </template>
+          <template v-slot:selection="{ item }">
+            <span>{{ capitalize(item.raw) }}</span>
+          </template>
+        </v-select>
       </v-col>
     </v-row>
     <v-row align="center" no-gutters>
@@ -43,13 +52,15 @@ const updateSoundProgram = debounce(() => props.zoneStatus ? setSoundProgram(pro
     <v-row align="center" no-gutters>
       <v-col>Extra Bass</v-col>
       <v-col v-if="zoneStatus">
-        <v-switch :disabled="disabled" hide-details density="compact" v-model="zoneStatus.extra_bass" @update:model-value="updateExtraBass"/>
+        <v-switch :disabled="disabled" hide-details density="compact" v-model="zoneStatus.extra_bass"
+                  @update:model-value="updateExtraBass"/>
       </v-col>
     </v-row>
     <v-row align="center" no-gutters>
       <v-col>Enhancer</v-col>
       <v-col v-if="zoneStatus">
-        <v-switch :disabled="disabled" hide-details density="compact" v-model="zoneStatus.enhancer" @update:model-value="updateEnhancer"/>
+        <v-switch :disabled="disabled" hide-details density="compact" v-model="zoneStatus.enhancer"
+                  @update:model-value="updateEnhancer"/>
       </v-col>
     </v-row>
     <v-row v-for="key in ZONE_STATUS_FIELDS" no-gutters>

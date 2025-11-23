@@ -28,7 +28,7 @@ const togglePower = debounce(() => emit('togglePower'), 1000)
       </v-col>
       <v-col v-if="info && pageMode">
         <v-row v-for="key in DEVICE_INFO_FIELDS" no-gutters>
-          <v-col>{{ key.replace('_', ' ') }}</v-col>
+          <v-col class="text-medium-emphasis">{{ key.replace(/_/g, ' ') }}</v-col>
           <v-col>{{ info[key] }}</v-col>
         </v-row>
       </v-col>

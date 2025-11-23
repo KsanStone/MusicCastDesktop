@@ -90,4 +90,6 @@ export interface AudioSignal {
     error: number;
     format: string;
     fs: string;
+    bit: string;
+    bitrate: number;
 }

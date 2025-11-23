@@ -4,6 +4,7 @@ import {useAppStore} from "@/stores/app.ts";
 import {getSignalInfo, getZoneStatus, toggleZonePower} from "@/ipc/yamaha.ts";
 import {SignalInfo, ZoneStatus} from "@/ipc/models.ts";
 import VolumeControl from "@/components/VolumeControl.vue";
+import PlaybackCard from "@/components/PlaybackCard.vue";
 
 const app = useAppStore()
 const deviceId = useRoute().params.id as string
@@ -44,15 +45,12 @@ function togglePower() {
     </v-card>
 
     <v-card>
-      <v-card-title>Zone Status</v-card-title>
-      <avr-settings :zone-status="zoneStatus" :device-id="deviceId" class="pa-3" :disabled="!isOn"/>
+      <PlaybackCard :signal-info="signalInfo" :zone-status="zoneStatus"/>
     </v-card>
 
     <v-card>
-      <v-card-title>Signal Info</v-card-title>
-      <v-card-text>
-        {{ signalInfo }}
-      </v-card-text>
+      <v-card-title>Zone Status</v-card-title>
+      <avr-settings :zone-status="zoneStatus" :device-id="deviceId" class="pa-3" :disabled="!isOn"/>
     </v-card>
   </div>
 </template>
