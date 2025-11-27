@@ -1,5 +1,5 @@
 <template>
-  <v-main class="h-screen d-flex flex-column">
+  <v-main class="h-screen d-flex flex-column overflow-scroll">
     <v-container class="flex-grow-1 d-flex flex-column justify-center">
       <router-view v-slot="{ Component, route }">
         <transition name="slide-x" mode="out-in">

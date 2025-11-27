@@ -22,6 +22,7 @@ const signalInfoText = computed(() => {
   if (props.signalInfo?.audio.format) list.push(props.signalInfo.audio.format)
   if (props.signalInfo?.audio.fs) list.push(props.signalInfo.audio.fs)
   if (props.signalInfo?.audio.bit) list.push(props.signalInfo.audio.bit)
+  list = list.filter(x => x !== "---")
   list = list.concat(inputLabel.value)
   return list.join(' \u2022 ')
 })
@@ -31,6 +32,7 @@ const trackProgress = computed(() => props.netUsbPlayInfo?.play_time)
 const playState = computed(() => props.netUsbPlayInfo?.playback)
 const shuffleState = computed(() => props.netUsbPlayInfo?.shuffle)
 const repeatState = computed(() => props.netUsbPlayInfo?.repeat)
+const timeNotValid = computed(() => (trackProgress.value ?? 0) + (trackLength.value ?? 0) === 0)
 const repeatIcon = computed(() => {
   switch (repeatState.value ?? 'off') {
     case "all": return "mdi-repeat"
@@ -52,7 +54,7 @@ function formatTime(seconds: number) {
   if (seconds < 0) return '--:--';
   const s = seconds % 60;
   const m = Math.floor(seconds / 60);
-  return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  return m + ':' + (s < 10 ? '0' : '') + s;
 }
 
 </script>
@@ -89,16 +91,16 @@ function formatTime(seconds: number) {
               </v-col>
             </v-row>
             <v-row no-gutters>
-              <v-col cols="1" class="text-left">
-                <span>{{ formatTime(trackProgress ?? -1) }}</span>
+              <v-col cols="2" class="text-left">
+                <span :class="{'text-disabled' : timeNotValid || isTrackNotLoaded}">{{ formatTime(timeNotValid ? -1 : trackProgress ?? -1) }}</span>
               </v-col>
               <v-col>
                 <p class="text-sm-caption">
                   <span>{{ signalInfoText }}</span>
                 </p>
               </v-col>
-              <v-col cols="1" class="text-right">
-                <span>{{ formatTime(trackLength ?? -1) }}</span>
+              <v-col cols="2" class="text-right">
+                <span :class="{'text-disabled' : timeNotValid || isTrackNotLoaded}">{{ formatTime(timeNotValid ? -1 : trackLength ?? -1) }}</span>
               </v-col>
             </v-row>
           </v-container>

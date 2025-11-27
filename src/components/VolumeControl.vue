@@ -11,6 +11,7 @@ const props = defineProps<{
 }>()
 
 const DEBOUNCE_TIME = 50
+const AUTO_HOLD_SPEED = 100
 
 const volumeStep = computed(() => props.rangeStep.find(x => x.id == STEP_VOL)?.step ?? 1)
 const volumeMin = computed(() => props.rangeStep.find(x => x.id == STEP_VOL)?.min ?? 0)
@@ -42,45 +43,77 @@ function tempIncrVol(delta: number) {
 }
 
 let holdTimer: any = null
+let holdStopPoint: number | undefined = undefined
+let mousePressedOnVolumeSlider = false as boolean
+let sliderValue: number
 
-function startHold(delta: number) {
+function startHold(delta: number, until?: number) {
+  holdStopPoint = until
   if (holdTimer) clearInterval(holdTimer)
   holdTimer = setInterval(() => {
+    if (!props.zoneStatus || holdStopPoint == props.zoneStatus?.volume) {
+      stopHold()
+      return
+    }
     if (delta > 0) volumeUp()
     else volumeDown()
-  }, 120)
+  }, AUTO_HOLD_SPEED)
 }
 
 function stopHold() {
+  holdStopPoint = undefined
+  mousePressedOnVolumeSlider = false
   if (holdTimer) {
     clearInterval(holdTimer)
     holdTimer = null
   }
 }
+
+function animateVolume(target: number) {
+  target = Math.round(target)
+  if (!props.zoneStatus || holdTimer || target == props.zoneStatus.volume || !mousePressedOnVolumeSlider) return
+  const delta = target > props.zoneStatus.volume ? 1 : -1
+  startHold(delta, target)
+}
+
 </script>
 
 <template>
   <div v-if="zoneStatus" class="d-flex align-center items-center px-2 ga-1">
-    <v-btn variant="text" :icon="zoneStatus?.mute ? 'mdi-volume-off' : 'mdi-volume-high'"
-           :disabled="disabled" @click="toggleMute" />
+    <v-btn variant="text"
+           :icon="zoneStatus?.mute ? 'mdi-volume-off' : 'mdi-volume-high'"
+           :disabled="disabled"
+           @click="toggleMute" />
 
-    <span :class="{ 'text-disabled': disabled }" v-if="zoneStatus.volume > 0" class="text-left" style="min-width: 9ch">
+    <span :class="{ 'text-disabled': disabled }"
+          v-if="zoneStatus.volume > 0"
+          class="text-left"
+          style="min-width: 9ch">
       {{ `${zoneStatus.actual_volume.value} ${zoneStatus.actual_volume.unit}` }}
     </span>
     <span v-else class="text-center" style="min-width: 9ch">
       mute
     </span>
 
-    <v-btn icon="mdi-minus" variant="text" :disabled="disabled"
+    <v-btn icon="mdi-minus"
+           variant="text"
+           :disabled="disabled"
            @click="volumeDown"
            @mousedown="startHold(-1)"
            @mouseup="stopHold"
            @mouseleave="stopHold" />
 
-    <v-slider hide-details min="1" :max="zoneStatus.max_volume"
-              :model-value="zoneStatus.volume" readonly :disabled="disabled" />
+    <v-slider hide-details
+              :max="zoneStatus.max_volume"
+              :model-value="zoneStatus.volume"
+              :disabled="disabled"
+              @mousedown="mousePressedOnVolumeSlider = true; animateVolume(sliderValue)"
+              @mouseup="mousePressedOnVolumeSlider = false; stopHold()"
+              @update:model-value="sliderValue = $event" />
 
-    <v-btn icon="mdi-plus" variant="text" :disabled="disabled"
+    <v-btn icon="mdi-plus"
+           variant="text"
+           :disabled="disabled"
            @click="volumeUp"
            @mousedown="startHold(1)"
            @mouseup="stopHold"
@@ -89,3 +122,4 @@ function stopHold() {
 
   <div v-else></div>
 </template>
+

@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "yamahamusiccastdt",
+        "title": "MusicCast",
         "width": 800,
         "height": 600
       }
