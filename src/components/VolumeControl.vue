@@ -1,15 +1,21 @@
 <script setup lang="ts">
-import { ZoneStatus } from "@/ipc/models.ts"
+import {RangeStep, STEP_VOL, STEP_VOL_DB, STEP_VOL_NUMERIC, VOL_DB, VOL_NUMERIC, ZoneStatus} from "@/ipc/models.ts"
 import { debounce } from "@/util.ts"
 import { setMute, setVolumeDown, setVolumeUp } from "@/ipc/yamaha.ts"
 
 const props = defineProps<{
-  zoneStatus?: ZoneStatus
+  zoneStatus?: ZoneStatus,
+  rangeStep: RangeStep[]
   deviceId: string
   disabled?: boolean
 }>()
 
 const DEBOUNCE_TIME = 50
+
+const volumeStep = computed(() => props.rangeStep.find(x => x.id == STEP_VOL)?.step ?? 1)
+const volumeMin = computed(() => props.rangeStep.find(x => x.id == STEP_VOL)?.min ?? 0)
+const dbStep = computed(() => props.rangeStep.find(x => x.id == STEP_VOL_DB)?.step ?? 0.5)
+const numericStep = computed(() => props.rangeStep.find(x => x.id == STEP_VOL_NUMERIC)?.step ?? 0.5)
 
 const volumeUp = debounce(() => setVolumeUp(props.deviceId).then(() => tempIncrVol(1)), DEBOUNCE_TIME)
 const volumeDown = debounce(() => setVolumeDown(props.deviceId).then(() => tempIncrVol(-1)), DEBOUNCE_TIME)
@@ -23,13 +29,15 @@ function toggleMute() {
 function tempIncrVol(delta: number) {
   if (!props.zoneStatus) return
   const prev = props.zoneStatus.volume
-  props.zoneStatus.volume += delta
+  props.zoneStatus.volume += delta * volumeStep.value
   props.zoneStatus.mute = false
-  if (props.zoneStatus.volume < 0) props.zoneStatus.volume = 0
+  if (props.zoneStatus.volume < volumeMin.value) props.zoneStatus.volume = 0
   if (props.zoneStatus.volume > props.zoneStatus.max_volume) props.zoneStatus.volume = props.zoneStatus.max_volume
-  if (prev != props.zoneStatus.volume && props.zoneStatus.actual_volume.mode == "db") {
-    const unitDb = 0.5
-    props.zoneStatus.actual_volume.value += unitDb * delta
+  if (prev != props.zoneStatus.volume) {
+    if (props.zoneStatus.actual_volume.mode == VOL_DB)
+      props.zoneStatus.actual_volume.value += dbStep.value * delta
+    else if (props.zoneStatus.actual_volume.mode == VOL_NUMERIC)
+      props.zoneStatus.actual_volume.value += numericStep.value * delta
   }
 }
 

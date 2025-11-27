@@ -1,4 +1,13 @@
-import {DeviceInfo, DiscoveredDevice, Result, SignalInfo, StatusCode, ZoneProgramList, ZoneStatus} from "./models.ts";
+import {
+    DeviceFeatures,
+    DeviceInfo,
+    DiscoveredDevice,
+    Result,
+    SignalInfo,
+    StatusCode,
+    ZoneProgramList,
+    ZoneStatus
+} from "./models.ts";
 import {invoke} from "@tauri-apps/api/core";
 
 export async function discoverDevices(): Promise<DiscoveredDevice[]> {
@@ -57,4 +66,12 @@ export async function setExtraBass(ip: string, enabled: boolean): Promise<void> 
 
 export async function setSoundProgram(ip: string, program: string): Promise<void> {
     return await invoke("set_sound_program", {ip, zone: 'main', program});
+}
+
+export async function getFeatures(ip: string): Promise<DeviceFeatures> {
+    return await invoke("get_features", {ip});
+}
+
+export async function getNetUsbPlayInfo(ip: string): Promise<any> {
+    return await invoke("net_usb_get_play_info", { ip });
 }

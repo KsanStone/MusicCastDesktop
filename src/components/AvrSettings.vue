@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import {ZoneStatus} from "@/ipc/models.ts";
+import {Zone, ZoneStatus} from "@/ipc/models.ts";
 import {useAppStore} from "@/stores/app.ts";
 import {setEnhancer, setExtraBass, setPureDirect, setSoundProgram} from "@/ipc/yamaha.ts";
 import {debounce} from "@/util.ts";
 
-const props = defineProps<{ zoneStatus?: ZoneStatus, deviceId: string, disabled?: boolean }>()
+const props = defineProps<{ zoneStatus?: ZoneStatus, deviceId: string, disabled?: boolean, zone?: Zone }>()
 
 const app = useAppStore()
 const availablePrograms = ref<string[]>([])
-const ZONE_STATUS_FIELDS = ['input', 'input_text', 'surr_decoder_type', 'adaptive_drc', 'dialogue_level', 'dialogue_lift', 'subwoofer_volume', 'dts_dialogue_control', 'adaptive_dsp_level', 'party_enable']
+const surrDecoderTypes = computed(() => props.zone?.surr_decoder_type_list ?? [])
 
 onMounted(() => {
   app.getProgramList(props.deviceId).then(programs => {
@@ -43,6 +43,20 @@ const capitalize = (text: string) => text.replace(/_/g, ' ').split(' ').map(x =>
       </v-col>
     </v-row>
     <v-row align="center" no-gutters>
+      <v-col>Surround decoder type</v-col>
+      <v-col v-if="zoneStatus">
+        <v-select :disabled="disabled" hide-details density="compact" variant="solo-filled" :items="surrDecoderTypes"
+                  v-model="zoneStatus.surr_decoder_type" @update:model-value="() => {}">
+          <template v-slot:item="{ props: itemProps, item }">
+            <v-list-item v-bind="itemProps" :title="capitalize(item.raw)"></v-list-item>
+          </template>
+          <template v-slot:selection="{ item }">
+            <span>{{ capitalize(item.raw) }}</span>
+          </template>
+        </v-select>
+      </v-col>
+    </v-row>
+    <v-row align="center" no-gutters>
       <v-col>Pure Direct</v-col>
       <v-col v-if="zoneStatus">
         <v-switch :disabled="disabled" hide-details density="compact" v-model="zoneStatus.pure_direct"
@@ -63,8 +77,8 @@ const capitalize = (text: string) => text.replace(/_/g, ' ').split(' ').map(x =>
                   @update:model-value="updateEnhancer"/>
       </v-col>
     </v-row>
-    <v-row v-for="key in ZONE_STATUS_FIELDS" no-gutters>
-      <v-col>{{ key.replace('_', ' ') }}</v-col>
+    <v-row v-for="key in Object.keys(zoneStatus || {})" no-gutters>
+      <v-col>{{ capitalize(key) }}</v-col>
       <v-col>{{ zoneStatus?.[key] }}</v-col>
     </v-row>
   </v-container>

@@ -1,5 +1,11 @@
 export type StatusCode = string;
 
+export const STEP_VOL_DB = "actual_volume_db"
+export const STEP_VOL = "volume"
+export const STEP_VOL_NUMERIC = "actual_volume_numeric"
+export const VOL_DB = "db"
+export const VOL_NUMERIC = "numeric"
+
 export interface Result<T, E> {
     Ok: T | undefined;
     Err: E | undefined;
@@ -93,3 +99,197 @@ export interface AudioSignal {
     bit: string;
     bitrate: number;
 }
+
+export interface DeviceFeatures {
+    system: System;
+    zone: Zone[];
+    tuner: Tuner;
+    netusb: NetUsb;
+    distribution: Distribution;
+    ccs: Ccs;
+}
+
+export interface System {
+    func_list: string[];
+    zone_num: number;
+    input_list: SystemInput[];
+    bluetooth?: SystemBluetooth;
+    web_control_url?: string;
+    party_volume_list?: string[];
+    hdmi_standby_through_list?: string[];
+    works_with_sonos?: WorksWithSonos;
+}
+
+export interface SystemInput {
+    id: string;
+    distribution_enable: boolean;
+    rename_enable: boolean;
+    account_enable: boolean;
+    play_info_type: string;
+}
+
+export interface SystemBluetooth {
+    update_cancelable: boolean;
+    tx_connectivity_type_max?: number;
+}
+
+export interface WorksWithSonos {
+    zone: SonosZone[];
+}
+
+export interface SonosZone {
+    id: string;
+    input_list: string[];
+}
+
+export interface Zone {
+    id: string;
+    zone_b?: boolean;
+    func_list: string[];
+    input_list: string[];
+    sound_program_list?: string[];
+    surr_decoder_type_list?: string[];
+    tone_control_mode_list?: string[];
+    link_control_list?: string[];
+    link_audio_delay_list?: string[];
+    range_step: RangeStep[];
+    scene_num?: number;
+    cursor_list?: string[];
+    menu_list?: string[];
+    actual_volume_mode_list?: string[];
+    ccs_supported?: string[];
+}
+
+export interface RangeStep {
+    id: string;
+    min: number;
+    max: number;
+    step: number;
+}
+
+export interface Tuner {
+    func_list: string[];
+    range_step: TunerRangeStep[];
+    preset: TunerPreset;
+}
+
+export interface TunerRangeStep {
+    id: string;
+    min: number;
+    max: number;
+    step: number;
+}
+
+export interface TunerPreset {
+    type: string;
+    num: number;
+}
+
+export interface NetUsb {
+    func_list: string[];
+    preset: NetUsbPreset;
+    recent_info: NetUsbRecentInfo;
+    play_queue: NetUsbQueue;
+    mc_playlist: NetUsbMcPlaylist;
+    net_radio_type: string;
+    tidal?: NetUsbTidal;
+    qobuz?: NetUsbQobuz;
+}
+
+export interface NetUsbPreset {
+    num: number;
+}
+
+export interface NetUsbRecentInfo {
+    num: number;
+}
+
+export interface NetUsbQueue {
+    size: number;
+}
+
+export interface NetUsbMcPlaylist {
+    size: number;
+    num: number;
+}
+
+export interface NetUsbTidal {
+    mode: string;
+}
+
+export interface NetUsbQobuz {
+    login_type: string;
+}
+
+export interface Distribution {
+    version: number;
+    compatible_client: number[];
+    client_max: number;
+    server_zone_list: string[];
+    mc_surround?: McSurround;
+}
+
+export interface McSurround {
+    version: number;
+    func_list: string[];
+    master_role: McRole;
+    slave_role: McRole;
+}
+
+export interface McRole {
+    surround_pair?: boolean;
+    stereo_pair?: boolean;
+    subwoofer_pair?: boolean;
+    surround_pair_l_or_r?: boolean;
+    surround_pair_lr?: boolean;
+}
+
+export interface Ccs {
+    supported: boolean;
+}
+
+
+export type NetUsbPlayStatus =
+    | "play"
+    | "stop"
+    | "pause"
+    | "fast_reverse"
+    | "fast_forward";
+
+export type NetUsbRepeatMode =
+    | "off"
+    | "one"
+    | "all";
+
+export type NetUsbShuffleMode =
+    | "off"
+    | "on"
+    | "songs"
+    | "albums";
+
+export interface NetUsbPlayInfo {
+    input: string;
+    play_queue_type: string;
+    playback: NetUsbPlayStatus;
+    repeat: NetUsbRepeatMode;
+    shuffle: NetUsbShuffleMode;
+
+    play_time: number;
+    total_time: number;
+
+    artist: string;
+    album: string;
+    track: string;
+
+    albumart_url: string;
+    albumart_id: number;
+
+    usb_devicetype: string;
+    auto_stopped: boolean;
+
+    attribute: number;
+
+    repeat_available: NetUsbRepeatMode[];
+    shuffle_available: NetUsbShuffleMode[];
+}
+

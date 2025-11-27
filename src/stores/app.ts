@@ -1,13 +1,14 @@
 // Utilities
 import {defineStore} from 'pinia'
-import {DeviceInfo, DiscoveredDevice, Result, StatusCode} from "../ipc/models.ts";
-import {discoverDevices, getAllDeviceInfo, getZoneProgramList} from "../ipc/yamaha.ts";
+import {DeviceFeatures, DeviceInfo, DiscoveredDevice, Result, StatusCode} from "../ipc/models.ts";
+import {discoverDevices, getAllDeviceInfo, getFeatures, getZoneProgramList} from "../ipc/yamaha.ts";
 
 export const useAppStore = defineStore('app', {
     state: () => ({
         discoveredDevices: [] as DiscoveredDevice[],
         deviceInfo: {} as { [key: string]: Result<DeviceInfo, StatusCode> },
         programList: {} as { [key: string]: string[] },
+        deviceFeatures: {} as { [key: string]: DeviceFeatures },
         loaded: false,
         deviceInfoLoaded: false
     }),
@@ -17,6 +18,12 @@ export const useAppStore = defineStore('app', {
         },
         getDeviceInfo(state) {
             return (id: string) => state.deviceInfo[id]
+        },
+        /**
+         * Check if the device has been discovered and can be managed.
+         */
+        deviceManageable(state) {
+            return (id: string) => !!state.deviceInfo[id]?.Ok
         }
     },
     actions: {
@@ -58,6 +65,18 @@ export const useAppStore = defineStore('app', {
                 }
             }
             return []
+        },
+        async getDeviceFeatures(ip: string) {
+            if (this.deviceInfo[ip]?.Ok) {
+                if (this.deviceFeatures[ip] !== undefined) return this.deviceFeatures[ip]
+                try {
+                    const features = await getFeatures(ip)
+                    this.deviceFeatures[ip] = features
+                    return features
+                } catch (e) {
+                    console.error("Failed to get device features for device", ip, e)
+                }
+            }
         }
     }
 })

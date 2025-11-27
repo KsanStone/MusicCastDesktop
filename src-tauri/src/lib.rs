@@ -1,7 +1,7 @@
 use futures::future::try_join_all;
-use log::{debug, info};
+use log::{debug};
 use tauri::async_runtime::spawn_blocking;
-use yamaha_rs::{DeviceInfo, ResponseCode, SignalInfo, YamahaDevice, ZoneProgramList, ZoneStatus};
+use yamaha_rs::{DeviceFeatures, DeviceInfo, NetUsbPlayInfo, ResponseCode, SignalInfo, YamahaDevice, ZoneProgramList, ZoneStatus};
 
 #[tauri::command]
 async fn discover_devices() -> Vec<YamahaDevice> {
@@ -74,36 +74,78 @@ async fn set_volume_down(ip: String, zone: String) -> Result<(), ResponseCode> {
 
 
 #[tauri::command]
-async fn set_enhancer(ip: String, enabled: bool) -> Result<(), ResponseCode> {
-    spawn_blocking(move || yamaha_rs::set_enhancer(&ip, enabled))
+async fn set_enhancer(ip: String, zone: String, enabled: bool) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_enhancer(&ip, &zone, enabled))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_mute(ip: String, enabled: bool) -> Result<(), ResponseCode> {
-    spawn_blocking(move || yamaha_rs::set_mute(&ip, enabled))
+async fn set_mute(ip: String, zone: String, enabled: bool) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_mute(&ip, &zone, enabled))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_extra_bass(ip: String, enabled: bool) -> Result<(), ResponseCode> {
-    spawn_blocking(move || yamaha_rs::set_extra_bass(&ip, enabled))
+async fn set_extra_bass(ip: String, zone: String, enabled: bool) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_extra_bass(&ip, &zone, enabled))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_pure_direct(ip: String, enabled: bool) -> Result<(), ResponseCode> {
-    spawn_blocking(move || yamaha_rs::set_pure_direct(&ip, enabled))
+async fn set_pure_direct(ip: String, zone: String, enabled: bool) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_pure_direct(&ip, &zone, enabled))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_sound_program(ip: String, program: String) -> Result<(), ResponseCode> {
-    spawn_blocking(move || yamaha_rs::set_sound_program(&ip, &program))
+async fn set_sound_program(ip: String, zone: String, program: String) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_sound_program(&ip, &zone, &program))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_direct(ip: String, zone: String, enabled: bool) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_direct(&ip, &zone, enabled))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_balance(ip: String, zone: String, balance: i32) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_balance(&ip, &zone, balance))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn get_features(ip: String) -> Result<DeviceFeatures, ResponseCode> {
+    spawn_blocking(move || yamaha_rs::get_features(&ip))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_3d_surround(ip: String, zone: String, enabled: bool) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_3d_surround(&ip, &zone, enabled))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_sleep(ip: String, zone: String, time: u32) -> Result<(), ResponseCode> {
+    spawn_blocking(move || yamaha_rs::set_sleep(&ip, &zone, time))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn net_usb_get_play_info(ip: String) -> Result<NetUsbPlayInfo, ResponseCode> {
+    spawn_blocking(move || yamaha_rs::net_usb_get_play_info(&ip))
         .await
         .unwrap()
 }
@@ -126,7 +168,13 @@ pub fn run() {
             set_mute,
             set_extra_bass,
             set_pure_direct,
-            set_sound_program
+            set_sound_program,
+            set_direct,
+            set_balance,
+            get_features,
+            set_3d_surround,
+            set_sleep,
+            net_usb_get_play_info
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
