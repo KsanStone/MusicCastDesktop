@@ -1,11 +1,8 @@
 use futures::future::try_join_all;
 use log::debug;
 use tauri::async_runtime::spawn_blocking;
-use yamaha_rs::{
-    DeviceFeatures, DeviceInfo, NetUsbPlayInfo, SignalInfo, YamahaDevice, ZoneProgramList,
-    ZoneStatus,
-};
-use yamaha_rs::enums::{Playback, Repeat, Shuffle};
+use yamaha_rs::{DeviceFeatures, DeviceInfo, ListInfo, NetUsbPlayInfo, SignalInfo, YamahaDevice, ZoneProgramList, ZoneStatus};
+use yamaha_rs::enums::{ListControl, Playback, Repeat, Shuffle};
 
 #[tauri::command]
 async fn discover_devices() -> Vec<YamahaDevice> {
@@ -220,6 +217,59 @@ async fn net_usb_toggle_shuffle(ip: String) -> Result<(), yamaha_rs::error::Erro
         .unwrap()
 }
 
+#[tauri::command]
+async fn net_usb_get_list_info(
+    ip: String,
+    input: String,
+    index: u32,
+    size: u32
+) -> Result<ListInfo, yamaha_rs::error::Error> {
+    spawn_blocking(move || {
+        yamaha_rs::net_usb_get_list_info(&ip, &input, index, size, "en")
+    })
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn net_usb_set_list_control(
+    ip: String,
+    list_id: String,
+    control_type: ListControl,
+    index: Option<u32>,
+    zone: Option<String>
+) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || {
+        yamaha_rs::net_usb_set_list_control(&ip, &list_id, control_type, index, zone.as_deref())
+    })
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn net_usb_set_search_string(
+    ip: String,
+    list_id: String,
+    search_text: String
+) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || {
+        yamaha_rs::net_usb_set_search_string(&ip, &list_id, &search_text, None)
+    })
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_input(
+    ip: String,
+    input: String,
+    zone: String
+) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_input(&ip, &zone, &input))
+        .await
+        .unwrap()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -251,6 +301,10 @@ pub fn run() {
             net_usb_set_shuffle,
             net_usb_toggle_repeat,
             net_usb_toggle_shuffle,
+            net_usb_get_list_info,
+            net_usb_set_list_control,
+            net_usb_set_search_string,
+            set_input
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

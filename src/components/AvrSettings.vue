@@ -2,7 +2,7 @@
 import {Zone, ZoneStatus} from "@/ipc/models.ts";
 import {useAppStore} from "@/stores/app.ts";
 import {setEnhancer, setExtraBass, setPureDirect, setSoundProgram} from "@/ipc/yamaha.ts";
-import {debounce} from "@/util.ts";
+import {debounce, capitalize} from "@/util.ts";
 
 const CONTROL_RANGE_STEPS = ['subwoofer_volume', 'dialogue_lift', 'dts_dialogue_control', 'dialogue_level', ]
 
@@ -26,8 +26,6 @@ const updateSoundProgram = debounce(() => props.zoneStatus ? setSoundProgram(pro
 const rangeSteps = computed(() => props.zone?.range_step ?? [])
 
 const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
-
-const capitalize = (text: string) => text.replace(/_/g, ' ').split(' ').map(x => x.length > 0 ? x.charAt(0).toUpperCase() + x.substring(1).toLowerCase() : x).join(' ')
 
 </script>
 

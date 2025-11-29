@@ -5,6 +5,7 @@ import {getNetUsbPlayInfo, getSignalInfo, getZoneStatus, toggleZonePower} from "
 import {DeviceFeatures, NetUsbPlayInfo, SignalInfo, Zone, ZoneStatus} from "@/ipc/models.ts";
 import VolumeControl from "@/components/VolumeControl.vue";
 import PlaybackCard from "@/components/PlaybackCard.vue";
+import NetUsbListBrowser from "@/components/NetUsbListBrowser.vue";
 
 const app = useAppStore()
 const deviceId = useRoute().params.id as string
@@ -25,6 +26,7 @@ const netUsbPlayInfo = ref<NetUsbPlayInfo>();
 
 const isOn = computed(() => zoneStatus.value?.power === 'on')
 const zone = computed(() => features.value?.zone?.find((z: Zone) => z.id === "main"))
+// const inputInfo = computed(() => features.value?.system.input_list.find(x => x.id == zoneStatus.value?.input))
 
 async function refreshDeviceInfo() {
   zoneStatus.value = await getZoneStatus(deviceId)
@@ -60,7 +62,14 @@ function togglePower() {
     </v-card>
 
     <v-card>
-      <v-card-title>Zone Status</v-card-title>
+      <input-selector :features="features" :zone="zone" :zone-status="zoneStatus" :device-id="deviceId"/>
+    </v-card>
+
+    <v-card v-if="zoneStatus?.power === 'on'">
+      <net-usb-list-browser :device-id="deviceId" :input="zoneStatus?.input" v-if="zoneStatus?.input"/>
+    </v-card>
+
+    <v-card>
       <avr-settings :zone-status="zoneStatus" :device-id="deviceId" class="pa-3" :disabled="!isOn" :zone="zone"/>
     </v-card>
   </div>

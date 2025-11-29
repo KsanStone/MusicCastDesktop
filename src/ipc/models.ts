@@ -304,3 +304,59 @@ export interface NetUsbPlayInfo {
     shuffle_available: NetUsbShuffleMode[];
 }
 
+export interface NetUsbListItem {
+    text: string;
+    thumbnail?: string;
+
+    attribute: number;
+    subtexts?: string[];
+}
+
+export interface NetUsbListInfo {
+    input: string;
+    menu_layer: number;
+    max_line: number;
+    index: number;
+    playing_index: number;
+    menu_name: string;
+    list_info: NetUsbListItem[];
+}
+
+export type ListControlType = 'select' | 'play' | 'return';
+
+export interface ListItemAttributes {
+    /** Bit 1: Can be selected (e.g., it is a Folder, Container, or Menu Item) */
+    isSelectable: boolean;
+    /** Bit 2: Can be played immediately (e.g., a Song or Radio Station) */
+    isPlayable: boolean;
+    /** Bit 3: Is a search entry point (Requires setSearchString before selecting) */
+    isSearchable: boolean;
+    /** Bit 4: Has album art available */
+    hasArtwork: boolean;
+    /** Bit 0: Name exceeds max byte limit (mostly for internal UI logic) */
+    isNameTruncated: boolean;
+}
+
+/**
+ * Parses the raw integer attribute from Yamaha MusicCast into usable flags.
+ */
+export function getListItemAttributes(item: NetUsbListItem): ListItemAttributes {
+    const attr = item.attribute;
+
+    return {
+        // Bit 0: 0x01 (1)
+        isNameTruncated: (attr & 0x01) !== 0,
+
+        // Bit 1: 0x02 (2) -> Folder/Menu
+        isSelectable: (attr & 0x02) !== 0,
+
+        // Bit 2: 0x04 (4) -> Song/Station
+        isPlayable: (attr & 0x04) !== 0,
+
+        // Bit 3: 0x08 (8) -> Search Button
+        isSearchable: (attr & 0x08) !== 0,
+
+        // Bit 4: 0x10 (16)
+        hasArtwork: (attr & 0x10) !== 0,
+    };
+}

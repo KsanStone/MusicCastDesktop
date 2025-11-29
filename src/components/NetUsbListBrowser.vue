@@ -1,0 +1,154 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { controlNetUsbList, getNetUsbListInfo } from "@/ipc/yamaha.ts";
+import { getListItemAttributes, NetUsbListItem } from "@/ipc/models.ts";
+
+const props = defineProps<{
+  deviceId: string,
+  enabled?: boolean,
+  input: string
+}>()
+
+const entries = ref<NetUsbListItem[]>([])
+const loading = ref(false)
+const listKey = ref(0)
+const totalItems = ref<number | null>(null)
+const PAGE_SIZE = 8
+const referenceIndex = ref(0)
+
+watch(props, () => resetList(), { deep: true })
+
+async function load({ done }: { done: (status: 'ok' | 'empty' | 'loading' | 'error') => void }) {
+  // If we already know the total and have reached it, stop.
+  if (totalItems.value !== null && entries.value.length >= totalItems.value) {
+    done('empty')
+    return
+  }
+
+  try {
+    loading.value = true
+
+    const listInfo = await getNetUsbListInfo(
+        props.deviceId,
+        props.input,
+        referenceIndex.value,
+        PAGE_SIZE
+    )
+
+    // Update the total count from the API response
+    totalItems.value = listInfo.max_line
+
+    // Append new items to the continuous list
+    if (listInfo.list_info && listInfo.list_info.length > 0) {
+      entries.value.push(...listInfo.list_info)
+      referenceIndex.value += PAGE_SIZE
+      done('ok')
+    } else {
+      done('empty')
+    }
+  } catch (e) {
+    console.error(e)
+    done('error')
+  } finally {
+    loading.value = false
+  }
+}
+
+function resetList() {
+  entries.value = []
+  referenceIndex.value = 0
+  totalItems.value = null
+  // Incrementing the key forces v-infinite-scroll to destroy and recreate,
+  // triggering the 'load' event immediately for the top of the new list.
+  listKey.value++
+}
+
+async function entryClicked(i: number) {
+  const item = entries.value[i]
+  const attrs = getListItemAttributes(item)
+
+  // If it's a folder/selectable, we must navigate into it
+  if (attrs.isSelectable) {
+    loading.value = true
+    await controlNetUsbList(props.deviceId, "select", i)
+    // We don't fetch here manually; resetting the list triggers the infinite scroll to fetch
+    resetList()
+  } else {
+    // If it's just a song/file, just play it. No need to reload the list.
+    await controlNetUsbList(props.deviceId, "play", i)
+  }
+}
+
+async function doReturn() {
+  loading.value = true
+  await controlNetUsbList(props.deviceId, "return")
+  resetList()
+}
+</script>
+
+<template>
+  <div>
+    <div class="d-flex align-center pa-2">
+      <v-btn @click="doReturn" icon="mdi-arrow-left" variant="text" :disabled="loading"></v-btn>
+      <span class="text-caption ml-2" v-if="totalItems !== null">
+        {{ entries.length }} / {{ totalItems }} items
+      </span>
+      <v-spacer></v-spacer>
+      <v-btn icon="mdi-refresh" @click="resetList" :disabled="loading" variant="text" ></v-btn>
+    </div>
+
+    <v-divider></v-divider>
+
+    <v-infinite-scroll
+        :key="listKey"
+        :height="400"
+        :items="entries"
+        :onLoad="load"
+        class="trackList"
+    >
+      <template v-for="(entry, i) in entries" :key="i">
+        <v-list-item
+            @click="entryClicked(i)"
+            v-ripple
+            class="cursor-pointer"
+            lines="two"
+        >
+          <template v-slot:prepend>
+            <v-img
+                :src="entry.thumbnail"
+                aspect-ratio="1"
+                width="40"
+                class="rounded mr-2"
+                cover
+                v-if="entry.thumbnail"
+            ></v-img>
+            <v-icon size="40" v-else-if="getListItemAttributes(entry).isSelectable">mdi-folder</v-icon>
+            <v-icon size="40" v-else-if="getListItemAttributes(entry).isPlayable">mdi-music-note</v-icon>
+          </template>
+          <v-list-item-title>{{ entry.text }}</v-list-item-title>
+          <v-list-item-subtitle v-for="(line, idx) in entry.subtexts" :key="idx">
+            {{ line }}
+          </v-list-item-subtitle>
+        </v-list-item>
+        <v-divider inset></v-divider>
+      </template>
+
+      <template v-slot:empty>
+        <div class="pa-4 text-center text-grey">End of list</div>
+      </template>
+      <template v-slot:error>
+        <div class="pa-4 text-center text-error">
+          Error loading data
+          <v-btn size="small" variant="text" @click="resetList">Retry</v-btn>
+        </div>
+      </template>
+    </v-infinite-scroll>
+  </div>
+</template>
+
+<style scoped>
+.trackList {
+  overflow: auto;
+  overscroll-behavior: none;
+}
+</style>

@@ -5051,7 +5051,7 @@ dependencies = [
 [[package]]
 name = "yamaha_rs"
 version = "0.1.10"
-source = "git+https://github.com/KsanStone/yamaha_rs#2efbbffb4afb93b1bd8f7bcd25e187c070b0699d"
+source = "git+https://github.com/KsanStone/yamaha_rs#1a3a816e2824747b4a74ebd688880608533b64eb"
 dependencies = [
  "serde",
  "serde_json",

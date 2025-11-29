@@ -1,7 +1,7 @@
 import {
     DeviceFeatures,
     DeviceInfo,
-    DiscoveredDevice, NetUsbPlayInfo, NetUsbRepeatMode, NetUsbShuffleMode, PlaybackCommand,
+    DiscoveredDevice, ListControlType, NetUsbListInfo, NetUsbPlayInfo, NetUsbRepeatMode, NetUsbShuffleMode, PlaybackCommand,
     Result,
     SignalInfo,
     StatusCode,
@@ -94,4 +94,44 @@ export async function toggleNetUsbRepeat(ip: string): Promise<void> {
 
 export async function toggleNetUsbShuffle(ip: string): Promise<void> {
     return await invoke("net_usb_toggle_shuffle", { ip });
+}
+
+export async function getNetUsbListInfo(
+    ip: string,
+    input: string,
+    index: number = 0,
+    size: number = 8
+): Promise<NetUsbListInfo> {
+    return await invoke("net_usb_get_list_info", { ip, input, index, size });
+}
+
+export async function controlNetUsbList(
+    ip: string,
+    controlType: ListControlType,
+    index?: number,
+    zone: string = 'main'
+): Promise<void> {
+    return await invoke("net_usb_set_list_control", {
+        ip,
+        listId: 'main',
+        controlType,
+        index,
+        zone
+    });
+}
+
+export async function searchNetUsbList(ip: string, searchText: string): Promise<void> {
+    return await invoke("net_usb_set_search_string", {
+        ip,
+        listId: 'main',
+        searchText
+    });
+}
+
+export async function setInput(
+    ip: string,
+    input: string,
+    zone: string = 'main'
+): Promise<void> {
+    return await invoke("set_input", { ip, input, zone });
 }

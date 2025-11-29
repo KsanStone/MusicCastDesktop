@@ -15,3 +15,5 @@ export function debounce<T extends (...args: any[]) => void>(fn: T, delay: numbe
         }
     } as T;
 }
+
+export const capitalize = (text: string) => text.replace(/_/g, ' ').split(' ').map(x => x.length > 0 ? x.charAt(0).toUpperCase() + x.substring(1).toLowerCase() : x).join(' ')

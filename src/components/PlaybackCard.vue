@@ -3,6 +3,8 @@ import {NetUsbPlayInfo, SignalInfo, ZoneStatus} from "@/ipc/models.ts";
 import {debounce} from "@/util.ts";
 import {setNetUsbPlayback, toggleNetUsbRepeat, toggleNetUsbShuffle} from "@/ipc/yamaha.ts";
 
+// TODO use the device features to figure out what api to use to fetch the playback info.
+
 const props = defineProps<{
   deviceIp: string,
   signalInfo?: SignalInfo
