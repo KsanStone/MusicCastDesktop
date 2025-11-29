@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {NetUsbPlayInfo, SignalInfo, ZoneStatus} from "@/ipc/models.ts";
+import {debounce} from "@/util.ts";
+import {setNetUsbPlayback, toggleNetUsbRepeat, toggleNetUsbShuffle} from "@/ipc/yamaha.ts";
 
 const props = defineProps<{
   deviceIp: string,
@@ -32,7 +34,7 @@ const trackProgress = computed(() => props.netUsbPlayInfo?.play_time)
 const playState = computed(() => props.netUsbPlayInfo?.playback)
 const shuffleState = computed(() => props.netUsbPlayInfo?.shuffle)
 const repeatState = computed(() => props.netUsbPlayInfo?.repeat)
-const timeNotValid = computed(() => (trackProgress.value ?? 0) + (trackLength.value ?? 0) === 0)
+const timeNotValid = computed(() => ((trackProgress.value ?? 0) + (trackLength.value ?? 0) === 0) || trackProgress.value === -60000)
 const repeatIcon = computed(() => {
   switch (repeatState.value ?? 'off') {
     case "all": return "mdi-repeat"
@@ -56,6 +58,13 @@ function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
   return m + ':' + (s < 10 ? '0' : '') + s;
 }
+
+const DEBOUNCE_TIME = 500
+const toggleShuffle = debounce(() => toggleNetUsbShuffle(props.deviceIp), DEBOUNCE_TIME)
+const toggleRepeat = debounce(() => toggleNetUsbRepeat(props.deviceIp), DEBOUNCE_TIME)
+const togglePlay = debounce(() => setNetUsbPlayback(props.deviceIp, "play_pause"), DEBOUNCE_TIME)
+const skipNext = debounce(() => setNetUsbPlayback(props.deviceIp, "next"), DEBOUNCE_TIME)
+const skipPrevious = debounce(() => setNetUsbPlayback(props.deviceIp, "previous"), DEBOUNCE_TIME)
 
 </script>
 
@@ -86,8 +95,8 @@ function formatTime(seconds: number) {
           <v-container fluid>
             <v-row no-gutters>
               <v-col>
-                <v-slider hide-details readonly :model-value="trackProgress" :max="trackLength"
-                          :disabled="isTrackNotLoaded"></v-slider>
+                <v-slider hide-details readonly :model-value="trackProgress" :max="trackLength" :thumb-size="isTrackNotLoaded || timeNotValid ? 0 : undefined"
+                          :disabled="isTrackNotLoaded || timeNotValid"></v-slider>
               </v-col>
             </v-row>
             <v-row no-gutters>
@@ -106,13 +115,13 @@ function formatTime(seconds: number) {
           </v-container>
           <div class="d-flex ga-2 justify-center">
             <v-btn :disabled="isTrackNotLoaded" :variant="(repeatState ?? 'off') === 'off' ? 'outlined' : 'elevated'"
-                   :icon="repeatIcon" color="secondary"></v-btn>
-            <v-btn :disabled="isTrackNotLoaded" variant="elevated" icon="mdi-rewind" color="primary"></v-btn>
+                   :icon="repeatIcon" color="secondary" @click="toggleRepeat"></v-btn>
+            <v-btn :disabled="isTrackNotLoaded" variant="elevated" icon="mdi-skip-previous" color="primary" @click="skipPrevious"></v-btn>
             <v-btn :disabled="isTrackNotLoaded" variant="elevated"
-                   :icon="playState === 'play' ? 'mdi-pause' : 'mdi-play'" color="primary"></v-btn>
-            <v-btn :disabled="isTrackNotLoaded" variant="elevated" icon="mdi-fast-forward" color="primary"></v-btn>
+                   :icon="playState === 'play' ? 'mdi-pause' : 'mdi-play'" color="primary" @click="togglePlay"></v-btn>
+            <v-btn :disabled="isTrackNotLoaded" variant="elevated" icon="mdi-skip-next" color="primary" @click="skipNext"></v-btn>
             <v-btn :disabled="isTrackNotLoaded" :variant="(shuffleState ?? 'off') === 'off' ? 'outlined' : 'elevated'"
-                   icon="mdi-shuffle" color="secondary"></v-btn>
+                   icon="mdi-shuffle" color="secondary" @click="toggleShuffle"></v-btn>
           </div>
         </div>
       </div>

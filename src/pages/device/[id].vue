@@ -33,7 +33,7 @@ async function refreshDeviceInfo() {
 }
 
 onMounted(() => {
-  app.getDeviceFeatures(deviceId).then(f => features.value = f)
+  app.getDeviceFeatures(deviceId).then(f => features.value = f).catch(console.error)
   refreshDeviceInfo()
   timer = setInterval(() => refreshDeviceInfo(), 1000)
 })

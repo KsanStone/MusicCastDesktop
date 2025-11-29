@@ -248,6 +248,17 @@ export interface Ccs {
     supported: boolean;
 }
 
+export type PlaybackCommand =
+    | 'play'
+    | 'stop'
+    | 'pause'
+    | 'play_pause'
+    | 'previous'
+    | 'next'
+    | 'fast_reverse_start'
+    | 'fast_reverse_end'
+    | 'fast_forward_start'
+    | 'fast_forward_end';
 
 export type NetUsbPlayStatus =
     | "play"
