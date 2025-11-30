@@ -74,7 +74,7 @@ const skipPrevious = debounce(() => setNetUsbPlayback(props.deviceIp, "previous"
   <div class="text-center pa-3">
     <div class="d-flex align-center justify-center flex-wrap">
       <v-img :src="netUsbPlayInfo?.albumart_url ? `http://${deviceIp}${netUsbPlayInfo.albumart_url}` : undefined"
-             alt="playback cover art" class="rounded-lg border-sm flex-grow-0" aspect-ratio="1" width="250px">
+             alt="playback cover art" class="rounded border-sm flex-grow-0" aspect-ratio="1" width="250px">
         <template v-slot:error>
           <div class="fill-height d-flex align-center justify-center">
             <v-icon icon="mdi-music-note-outline" color="grey lighten-2" size="40"/>
@@ -117,13 +117,13 @@ const skipPrevious = debounce(() => setNetUsbPlayback(props.deviceIp, "previous"
           </v-container>
           <div class="d-flex ga-2 justify-center">
             <v-btn :disabled="isTrackNotLoaded" :variant="(repeatState ?? 'off') === 'off' ? 'outlined' : 'elevated'"
-                   :icon="repeatIcon" color="secondary" @click="toggleRepeat"></v-btn>
+                   :icon="repeatIcon" color="primary" @click="toggleRepeat"></v-btn>
             <v-btn :disabled="isTrackNotLoaded" variant="elevated" icon="mdi-skip-previous" color="primary" @click="skipPrevious"></v-btn>
             <v-btn :disabled="isTrackNotLoaded" variant="elevated"
                    :icon="playState === 'play' ? 'mdi-pause' : 'mdi-play'" color="primary" @click="togglePlay"></v-btn>
             <v-btn :disabled="isTrackNotLoaded" variant="elevated" icon="mdi-skip-next" color="primary" @click="skipNext"></v-btn>
             <v-btn :disabled="isTrackNotLoaded" :variant="(shuffleState ?? 'off') === 'off' ? 'outlined' : 'elevated'"
-                   icon="mdi-shuffle" color="secondary" @click="toggleShuffle"></v-btn>
+                   icon="mdi-shuffle" color="primary" @click="toggleShuffle"></v-btn>
           </div>
         </div>
       </div>

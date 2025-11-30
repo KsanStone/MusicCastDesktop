@@ -2,7 +2,7 @@
 
 import {useAppStore} from "@/stores/app.ts";
 import {getNetUsbPlayInfo, getSignalInfo, getZoneStatus, toggleZonePower} from "@/ipc/yamaha.ts";
-import {DeviceFeatures, NetUsbPlayInfo, SignalInfo, Zone, ZoneStatus} from "@/ipc/models.ts";
+import {BROWSABLE_INPUTS, DeviceFeatures, NetUsbPlayInfo, SignalInfo, Zone, ZoneStatus} from "@/ipc/models.ts";
 import VolumeControl from "@/components/VolumeControl.vue";
 import PlaybackCard from "@/components/PlaybackCard.vue";
 import NetUsbListBrowser from "@/components/NetUsbListBrowser.vue";
@@ -26,6 +26,7 @@ const netUsbPlayInfo = ref<NetUsbPlayInfo>();
 
 const isOn = computed(() => zoneStatus.value?.power === 'on')
 const zone = computed(() => features.value?.zone?.find((z: Zone) => z.id === "main"))
+
 // const inputInfo = computed(() => features.value?.system.input_list.find(x => x.id == zoneStatus.value?.input))
 
 async function refreshDeviceInfo() {
@@ -54,19 +55,22 @@ function togglePower() {
     <AvrCard :device="device" :info="deviceInfo" page-mode @togglePower="togglePower" :is-on="isOn"/>
 
     <v-card>
-      <volume-control :zone-status="zoneStatus" :device-id="deviceId" :disabled="!isOn" :range-step="zone?.range_step ?? []"/>
+      <volume-control :zone-status="zoneStatus" :device-id="deviceId" :disabled="!isOn"
+                      :range-step="zone?.range_step ?? []"/>
     </v-card>
 
     <v-card>
-      <PlaybackCard :device-ip="deviceId" :signal-info="signalInfo" :zone-status="zoneStatus" :net-usb-play-info="netUsbPlayInfo"/>
+      <playback-card :device-ip="deviceId" :signal-info="signalInfo" :zone-status="zoneStatus"
+                     :net-usb-play-info="netUsbPlayInfo"/>
     </v-card>
 
-    <v-card>
-      <input-selector :features="features" :zone="zone" :zone-status="zoneStatus" :device-id="deviceId"/>
-    </v-card>
-
-    <v-card v-if="zoneStatus?.power === 'on'">
-      <net-usb-list-browser :device-id="deviceId" :input="zoneStatus?.input" v-if="zoneStatus?.input"/>
+    <v-card class="d-flex flex-row sm:flex-column">
+      <net-usb-list-browser :device-id="deviceId" :input="zoneStatus?.input"
+                            v-if="zoneStatus?.input && BROWSABLE_INPUTS.includes(zoneStatus?.input)" class="w-50"/>
+      <div style="overflow-y: scroll; max-height: 564px" class="w-50 d-flex flex-column align-stretch py-3">
+        <input-selector :features="features" :zone="zone" :zone-status="zoneStatus" :device-id="deviceId"
+                        :disabled="zoneStatus?.power !== 'on'"/>
+      </div>
     </v-card>
 
     <v-card>

@@ -7,7 +7,8 @@ const props = defineProps<{
   deviceId: string,
   features?: DeviceFeatures,
   zone?: Zone,
-  zoneStatus?: ZoneStatus
+  zoneStatus?: ZoneStatus,
+  disabled?: boolean
 }>()
 
 const currentInput = computed(() => props.zoneStatus?.input)
@@ -32,9 +33,9 @@ const doSetInput = debounce((id: string) => {
 </script>
 
 <template>
-  <div v-if="features && zone" class="d-flex flex-wrap ga-3 justify-center pa-3">
-    <v-btn v-for="input in inputList" :key="input.id" :variant="input.id === currentInput ? 'tonal' : 'outlined'" width="200"
-           :prepend-icon="getInputIcon(input.id)"  :color="input.id === currentInput ? 'primary' : undefined" @click="doSetInput(input.id)">
+  <div v-if="features && zone" class="d-flex flex-wrap ga-3 justify-center">
+    <v-btn v-for="input in inputList" :key="input.id" :variant="input.id === currentInput ? 'tonal' : 'flat'" width="200" :disabled="disabled"
+           :prepend-icon="getInputIcon(input.id)" :color="input.id === currentInput ? 'primary' : undefined" @click="doSetInput(input.id)">
       <h3>{{ capitalize(input.id) }}</h3>
     </v-btn>
   </div>

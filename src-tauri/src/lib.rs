@@ -270,6 +270,48 @@ async fn set_input(
         .unwrap()
 }
 
+#[tauri::command]
+async fn set_subwoofer_volume(ip: String, volume: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_subwoofer_volume(&ip, &zone, volume))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_dialogue_lift(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_dialogue_lift(&ip, &zone, value))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_dialogue_level(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_dialogue_level(&ip, &zone, value))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_dts_dialogue_control(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_dts_dialogue_control(&ip, &zone, value))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_tone_bass(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_tone_bass(&ip, &zone, value))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_tone_treble(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_tone_treble(&ip, &zone, value))
+        .await
+        .unwrap()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -304,7 +346,13 @@ pub fn run() {
             net_usb_get_list_info,
             net_usb_set_list_control,
             net_usb_set_search_string,
-            set_input
+            set_input,
+            set_subwoofer_volume,
+            set_dialogue_lift,
+            set_dialogue_level,
+            set_dts_dialogue_control,
+            set_tone_bass,
+            set_tone_treble
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

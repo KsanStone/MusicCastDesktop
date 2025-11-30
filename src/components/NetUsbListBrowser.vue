@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { controlNetUsbList, getNetUsbListInfo } from "@/ipc/yamaha.ts";
-import { getListItemAttributes, NetUsbListItem } from "@/ipc/models.ts";
+import {ref} from 'vue';
+import {controlNetUsbList, getNetUsbListInfo} from "@/ipc/yamaha.ts";
+import {getListItemAttributes, NetUsbListItem} from "@/ipc/models.ts";
 
 const props = defineProps<{
   deviceId: string,
@@ -16,9 +16,9 @@ const totalItems = ref<number | null>(null)
 const PAGE_SIZE = 8
 const referenceIndex = ref(0)
 
-watch(props, () => resetList(), { deep: true })
+watch(props, () => resetList(), {deep: true})
 
-async function load({ done }: { done: (status: 'ok' | 'empty' | 'loading' | 'error') => void }) {
+async function load({done}: { done: (status: 'ok' | 'empty' | 'loading' | 'error') => void }) {
   // If we already know the total and have reached it, stop.
   if (totalItems.value !== null && entries.value.length >= totalItems.value) {
     done('empty')
@@ -94,15 +94,15 @@ async function doReturn() {
         {{ entries.length }} / {{ totalItems }} items
       </span>
       <v-spacer></v-spacer>
-      <v-btn icon="mdi-refresh" @click="resetList" :disabled="loading" variant="text" ></v-btn>
+      <v-btn icon="mdi-refresh" @click="resetList" :disabled="loading" variant="text"></v-btn>
     </div>
 
     <v-divider></v-divider>
 
     <v-infinite-scroll
         :key="listKey"
-        :height="400"
         :items="entries"
+        :height="500"
         :onLoad="load"
         class="trackList"
     >
@@ -114,27 +114,27 @@ async function doReturn() {
             lines="two"
         >
           <template v-slot:prepend>
-            <v-img
-                :src="entry.thumbnail"
-                aspect-ratio="1"
-                width="40"
-                class="rounded mr-2"
-                cover
-                v-if="entry.thumbnail"
-            ></v-img>
-            <v-icon size="40" v-else-if="getListItemAttributes(entry).isSelectable">mdi-folder</v-icon>
-            <v-icon size="40" v-else-if="getListItemAttributes(entry).isPlayable">mdi-music-note</v-icon>
+            <v-icon v-if="entry.thumbnail" size="40">
+              <v-img
+                  :src="entry.thumbnail"
+                  aspect-ratio="1"
+                  width="40"
+                  class="rounded"
+                  cover
+              ></v-img>
+            </v-icon>
+            <v-icon size="40" v-else-if="getListItemAttributes(entry).isSelectable" icon="mdi-folder"></v-icon>
+            <v-icon size="40" v-else-if="getListItemAttributes(entry).isPlayable" icon="mdi-music-note"></v-icon>
           </template>
           <v-list-item-title>{{ entry.text }}</v-list-item-title>
           <v-list-item-subtitle v-for="(line, idx) in entry.subtexts" :key="idx">
             {{ line }}
           </v-list-item-subtitle>
         </v-list-item>
-        <v-divider inset></v-divider>
       </template>
 
       <template v-slot:empty>
-        <div class="pa-4 text-center text-grey">End of list</div>
+        <div class="pa-4 text-center text-disabled" v-if="totalItems == 0">Empty</div>
       </template>
       <template v-slot:error>
         <div class="pa-4 text-center text-error">

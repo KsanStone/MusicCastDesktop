@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import {Zone, ZoneStatus} from "@/ipc/models.ts";
 import {useAppStore} from "@/stores/app.ts";
-import {setEnhancer, setExtraBass, setPureDirect, setSoundProgram} from "@/ipc/yamaha.ts";
+import {
+  setDialogueLevel,
+  setDialogueLift, setDtsDialogueControl,
+  setEnhancer,
+  setExtraBass,
+  setPureDirect,
+  setSoundProgram,
+  setSubwooferVolume, setToneBass, setToneTreble
+} from "@/ipc/yamaha.ts";
 import {debounce, capitalize} from "@/util.ts";
-
-const CONTROL_RANGE_STEPS = ['subwoofer_volume', 'dialogue_lift', 'dts_dialogue_control', 'dialogue_level', ]
 
 const props = defineProps<{ zoneStatus?: ZoneStatus, deviceId: string, disabled?: boolean, zone?: Zone }>()
 
@@ -23,6 +29,35 @@ const updatePureDirect = debounce(() => setPureDirect(props.deviceId, props.zone
 const updateExtraBass = debounce(() => setExtraBass(props.deviceId, props.zoneStatus?.extra_bass ?? false), DEBOUNCE_TIME)
 const updateEnhancer = debounce(() => setEnhancer(props.deviceId, props.zoneStatus?.enhancer ?? false), DEBOUNCE_TIME)
 const updateSoundProgram = debounce(() => props.zoneStatus ? setSoundProgram(props.deviceId, props.zoneStatus.sound_program) : 0, DEBOUNCE_TIME)
+const SLIDER_DEBOUNCE_TIME = 50
+const updateSubwooferVolume = debounce(() => props.zoneStatus ? setSubwooferVolume(props.deviceId, props.zoneStatus.subwoofer_volume) : 0, SLIDER_DEBOUNCE_TIME)
+const updateDialogLift = debounce(() => props.zoneStatus ? setDialogueLift(props.deviceId, props.zoneStatus.dialogue_lift) : 0, SLIDER_DEBOUNCE_TIME)
+const updateDtsDialogeControl = debounce(() => props.zoneStatus ? setDtsDialogueControl(props.deviceId, props.zoneStatus.dts_dialogue_control) : 0, SLIDER_DEBOUNCE_TIME)
+const updateDialogLevel = debounce(() => props.zoneStatus ? setDialogueLevel(props.deviceId, props.zoneStatus.dialogue_level) : 0, SLIDER_DEBOUNCE_TIME)
+const updateBass = debounce(() => props.zoneStatus ? setToneBass(props.deviceId, props.zoneStatus.tone_control.bass) : 0, SLIDER_DEBOUNCE_TIME)
+const updateTreble = debounce(() => props.zoneStatus ? setToneTreble(props.deviceId, props.zoneStatus.tone_control.treble) : 0, SLIDER_DEBOUNCE_TIME)
+
+const CONTROL_RANGE_STEPS = [
+  {'id': 'subwoofer_volume', 'update': updateSubwooferVolume},
+  {'id': 'dialogue_lift', 'update': updateDialogLift},
+  {'id': 'dts_dialogue_control', 'update': updateDtsDialogeControl},
+  {'id': 'dialogue_level', 'update': updateDialogLevel},
+  {
+    'id': 'tone_control',
+    'name': 'Bass',
+    'update': updateBass,
+    'get': () => props.zoneStatus?.tone_control.bass,
+    'set': (v: number) => props.zoneStatus!.tone_control.bass = v
+  },
+  {
+    'id': 'tone_control',
+    'name': 'Treble',
+    'update': updateTreble,
+    'get': () => props.zoneStatus?.tone_control.treble,
+    'set': (v: number) => props.zoneStatus!.tone_control.treble = v
+  },
+]
+
 const rangeSteps = computed(() => props.zone?.range_step ?? [])
 
 const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
@@ -31,7 +66,7 @@ const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
 
 <template>
   <v-container :class="{'text-disabled': disabled}">
-    <v-row align="center" no-gutters>
+    <v-row align="center" no-gutters class="setting-row">
       <v-col>Sound Program</v-col>
       <v-col v-if="zoneStatus">
         <v-select :disabled="disabled" hide-details density="compact" variant="solo-filled" :items="availablePrograms"
@@ -45,7 +80,7 @@ const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
         </v-select>
       </v-col>
     </v-row>
-    <v-row align="center" no-gutters>
+    <v-row align="center" no-gutters class="setting-row">
       <v-col>Surround decoder type</v-col>
       <v-col v-if="zoneStatus">
         <v-select :disabled="disabled" hide-details density="compact" variant="solo-filled" :items="surrDecoderTypes"
@@ -59,54 +94,36 @@ const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
         </v-select>
       </v-col>
     </v-row>
-    <v-row align="center" no-gutters>
+    <v-row align="center" no-gutters class="setting-row">
       <v-col>Pure Direct</v-col>
       <v-col v-if="zoneStatus">
         <v-switch :disabled="disabled" hide-details density="compact" v-model="zoneStatus.pure_direct"
                   @update:model-value="updatePureDirect"/>
       </v-col>
     </v-row>
-    <v-row align="center" no-gutters>
+    <v-row align="center" no-gutters class="setting-row">
       <v-col>Extra Bass</v-col>
       <v-col v-if="zoneStatus">
         <v-switch :disabled="disabled" hide-details density="compact" v-model="zoneStatus.extra_bass"
                   @update:model-value="updateExtraBass"/>
       </v-col>
     </v-row>
-    <v-row align="center" no-gutters>
+    <v-row align="center" no-gutters class="setting-row">
       <v-col>Enhancer</v-col>
       <v-col v-if="zoneStatus">
         <v-switch :disabled="disabled" hide-details density="compact" v-model="zoneStatus.enhancer"
                   @update:model-value="updateEnhancer"/>
       </v-col>
     </v-row>
-    <v-row align="center" no-gutters v-for="range in CONTROL_RANGE_STEPS.filter(x => rangeStep(x) !== undefined)">
-      <v-col>{{ capitalize(range) }}</v-col>
+    <v-row align="center" no-gutters v-for="range in CONTROL_RANGE_STEPS.filter(x => rangeStep(x.id) !== undefined)"
+           class="setting-row">
+      <v-col>{{ capitalize(range.name ?? range.id) }}</v-col>
       <v-col v-if="zoneStatus">
-        <v-slider :model-value="zoneStatus[range]" :min="rangeStep(range)!.min"
-                  :max="rangeStep(range)!.max" :step="rangeStep(range)!.step"
+        <v-slider :model-value="range.get ? range.get() : zoneStatus[range.id]" :min="rangeStep(range.id)!.min"
+                  :max="rangeStep(range.id)!.max" :step="rangeStep(range.id)!.step"
                   show-ticks="always"
-                  thumb-label
-                  ></v-slider>
-      </v-col>
-    </v-row>
-    <v-row align="center" no-gutters v-if="rangeStep('tone_control')">
-      <v-col>Bass</v-col>
-      <v-col v-if="zoneStatus">
-        <v-slider :model-value="zoneStatus.tone_control.bass" :min="rangeStep('tone_control')!.min"
-                  :max="rangeStep('tone_control')!.max" :step="rangeStep('tone_control')!.step"
-                  show-ticks="always"
-                  thumb-label
-        ></v-slider>
-      </v-col>
-    </v-row>
-    <v-row align="center" no-gutters v-if="rangeStep('tone_control')">
-      <v-col>Treble</v-col>
-      <v-col v-if="zoneStatus">
-        <v-slider :model-value="zoneStatus.tone_control.treble" :min="rangeStep('tone_control')!.min"
-                  :max="rangeStep('tone_control')!.max" :step="rangeStep('tone_control')!.step"
-                  show-ticks="always"
-                  thumb-label
+                  thumb-label hide-details
+                  @update:model-value="range.set ? range.set($event) : (zoneStatus[range.id] = $event); range.update()"
         ></v-slider>
       </v-col>
     </v-row>
@@ -114,5 +131,7 @@ const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
 </template>
 
 <style scoped>
-
+.setting-row {
+  height: 48px;
+}
 </style>

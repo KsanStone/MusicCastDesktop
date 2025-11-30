@@ -5,6 +5,7 @@ export const STEP_VOL = "volume"
 export const STEP_VOL_NUMERIC = "actual_volume_numeric"
 export const VOL_DB = "db"
 export const VOL_NUMERIC = "numeric"
+export const BROWSABLE_INPUTS = ['server', 'net_radio', 'usb', 'tidal', 'deezer', 'qobu']
 
 export interface Result<T, E> {
     Ok: T | undefined;

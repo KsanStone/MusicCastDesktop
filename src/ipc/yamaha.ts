@@ -135,3 +135,27 @@ export async function setInput(
 ): Promise<void> {
     return await invoke("set_input", { ip, input, zone });
 }
+
+export async function setSubwooferVolume(ip: string, volume: number, zone: string = 'main'): Promise<void> {
+    return await invoke("set_subwoofer_volume", { ip, volume, zone });
+}
+
+export async function setDialogueLift(ip: string, value: number, zone: string = 'main'): Promise<void> {
+    return await invoke("set_dialogue_lift", { ip, value, zone });
+}
+
+export async function setDialogueLevel(ip: string, value: number, zone: string = 'main'): Promise<void> {
+    return await invoke("set_dialogue_level", { ip, value, zone });
+}
+
+export async function setDtsDialogueControl(ip: string, value: number, zone: string = 'main'): Promise<void> {
+    return await invoke("set_dts_dialogue_control", { ip, value, zone });
+}
+
+export async function setToneBass(ip: string, value: number, zone: string = 'main'): Promise<void> {
+    return await invoke("set_tone_bass", { ip, value, zone });
+}
+
+export async function setToneTreble(ip: string, value: number, zone: string = 'main'): Promise<void> {
+    return await invoke("set_tone_treble", { ip, value, zone });
+}
