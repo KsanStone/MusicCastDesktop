@@ -8,3 +8,7 @@
 // @use 'vuetify/settings' with (
 //   $color-pack: false
 // );
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}

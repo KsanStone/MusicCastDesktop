@@ -26,6 +26,7 @@ const netUsbPlayInfo = ref<NetUsbPlayInfo>();
 
 const isOn = computed(() => zoneStatus.value?.power === 'on')
 const zone = computed(() => features.value?.zone?.find((z: Zone) => z.id === "main"))
+const netUsbBrowser = computed(() => zoneStatus.value?.input && BROWSABLE_INPUTS.includes(zoneStatus.value?.input))
 
 // const inputInfo = computed(() => features.value?.system.input_list.find(x => x.id == zoneStatus.value?.input))
 
@@ -64,14 +65,18 @@ function togglePower() {
                      :net-usb-play-info="netUsbPlayInfo"/>
     </v-card>
 
-    <v-card class="d-flex flex-row sm:flex-column">
-      <net-usb-list-browser :device-id="deviceId" :input="zoneStatus?.input"
-                            v-if="zoneStatus?.input && BROWSABLE_INPUTS.includes(zoneStatus?.input)" class="w-50"/>
-      <div style="overflow-y: scroll; max-height: 564px" class="w-50 d-flex flex-column align-stretch py-3">
+    <div class="d-flex flex-row sm:flex-column w-100 ga-4 sm:ga-6 lg:ga-8">
+      <v-card class="w-50">
+        <net-usb-list-browser :device-id="deviceId" :input="zoneStatus!.input" v-if="netUsbBrowser"/>
+      </v-card>
+      <v-card style="max-height: 564px" class="d-flex flex-column align-stretch"
+              :class="{'w-50': netUsbBrowser}">
+        <v-card-title style="line-height: 48px">Inputs</v-card-title>
+        <v-divider></v-divider>
         <input-selector :features="features" :zone="zone" :zone-status="zoneStatus" :device-id="deviceId"
-                        :disabled="zoneStatus?.power !== 'on'"/>
-      </div>
-    </v-card>
+                        :disabled="zoneStatus?.power !== 'on'" class="overflow-y-scroll hide-scrollbar mt-3"/>
+      </v-card>
+    </div>
 
     <v-card>
       <avr-settings :zone-status="zoneStatus" :device-id="deviceId" class="pa-3" :disabled="!isOn" :zone="zone"/>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref} from 'vue';
-import {controlNetUsbList, getNetUsbListInfo} from "@/ipc/yamaha.ts";
+import {controlNetUsbList, getNetUsbListInfo, searchNetUsbList} from "@/ipc/yamaha.ts";
 import {getListItemAttributes, NetUsbListItem} from "@/ipc/models.ts";
 
 const props = defineProps<{
@@ -15,6 +15,11 @@ const listKey = ref(0)
 const totalItems = ref<number | null>(null)
 const PAGE_SIZE = 8
 const referenceIndex = ref(0)
+const depth = ref<number | null>(null)
+// Index of list item on which search will be performed.
+// When not null the search text prompt is active
+const indexToSearch = ref<number | null>(null)
+const searchQuery = ref('')
 
 watch(props, () => resetList(), {deep: true})
 
@@ -34,6 +39,7 @@ async function load({done}: { done: (status: 'ok' | 'empty' | 'loading' | 'error
         referenceIndex.value,
         PAGE_SIZE
     )
+    depth.value = listInfo.menu_layer
 
     // Update the total count from the API response
     totalItems.value = listInfo.max_line
@@ -67,8 +73,12 @@ async function entryClicked(i: number) {
   const item = entries.value[i]
   const attrs = getListItemAttributes(item)
 
-  // If it's a folder/selectable, we must navigate into it
-  if (attrs.isSelectable) {
+  if (attrs.isSearchable) {
+    // Ask for the query
+    indexToSearch.value = i
+    searchQuery.value = ''
+  } else if (attrs.isSelectable) {
+    // If it's a folder/selectable, we must navigate into itsearchNetUsbList
     loading.value = true
     await controlNetUsbList(props.deviceId, "select", i)
     // We don't fetch here manually; resetting the list triggers the infinite scroll to fetch
@@ -84,6 +94,16 @@ async function doReturn() {
   await controlNetUsbList(props.deviceId, "return")
   resetList()
 }
+
+async function doSearch() {
+  if (!indexToSearch.value) return
+  let idx = indexToSearch.value
+  indexToSearch.value = null
+  await searchNetUsbList(props.deviceId, searchQuery.value, idx)
+
+  resetList()
+}
+
 </script>
 
 <template>
@@ -92,6 +112,9 @@ async function doReturn() {
       <v-btn @click="doReturn" icon="mdi-arrow-left" variant="text" :disabled="loading"></v-btn>
       <span class="text-caption ml-2" v-if="totalItems !== null">
         {{ entries.length }} / {{ totalItems }} items
+      </span>
+      <span class="text-caption ml-2" v-if="depth !== null">
+        depth {{ depth }}
       </span>
       <v-spacer></v-spacer>
       <v-btn icon="mdi-refresh" @click="resetList" :disabled="loading" variant="text"></v-btn>
@@ -123,6 +146,7 @@ async function doReturn() {
                   cover
               ></v-img>
             </v-icon>
+            <v-icon size="40" v-else-if="getListItemAttributes(entry).isSearchable" icon="mdi-magnify"></v-icon>
             <v-icon size="40" v-else-if="getListItemAttributes(entry).isSelectable" icon="mdi-folder"></v-icon>
             <v-icon size="40" v-else-if="getListItemAttributes(entry).isPlayable" icon="mdi-music-note"></v-icon>
           </template>
@@ -143,6 +167,19 @@ async function doReturn() {
         </div>
       </template>
     </v-infinite-scroll>
+
+    <v-dialog :model-value="indexToSearch !== null" max-width="400px">
+      <v-card>
+        <v-form @submit.prevent="doSearch" class="pa-2">
+          <v-text-field v-model="searchQuery" label="Search query" dense hide-details/>
+        </v-form>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="indexToSearch = null">Cancel</v-btn>
+          <v-btn color="primary" variant="flat" @click="doSearch">Search</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 

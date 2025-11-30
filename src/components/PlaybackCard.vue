@@ -55,7 +55,7 @@ const isTrackNotLoaded = computed(() => {
 });
 
 function formatTime(seconds: number) {
-  if (seconds < 0) return '--:--';
+  if (seconds < 0) return '';
   const s = seconds % 60;
   const m = Math.floor(seconds / 60);
   return m + ':' + (s < 10 ? '0' : '') + s;
@@ -74,7 +74,7 @@ const skipPrevious = debounce(() => setNetUsbPlayback(props.deviceIp, "previous"
   <div class="text-center pa-3">
     <div class="d-flex align-center justify-center flex-wrap">
       <v-img :src="netUsbPlayInfo?.albumart_url ? `http://${deviceIp}${netUsbPlayInfo.albumart_url}` : undefined"
-             alt="playback cover art" class="rounded border-sm flex-grow-0" aspect-ratio="1" width="250px">
+             alt="playback cover art" class="rounded border-sm flex-grow-0" aspect-ratio="1" width="275px">
         <template v-slot:error>
           <div class="fill-height d-flex align-center justify-center">
             <v-icon icon="mdi-music-note-outline" color="grey lighten-2" size="40"/>

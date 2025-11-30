@@ -120,11 +120,12 @@ export async function controlNetUsbList(
     });
 }
 
-export async function searchNetUsbList(ip: string, searchText: string): Promise<void> {
+export async function searchNetUsbList(ip: string, searchText: string, listIndex: number | undefined): Promise<void> {
     return await invoke("net_usb_set_search_string", {
         ip,
         listId: 'main',
-        searchText
+        searchText,
+        index: listIndex
     });
 }
 

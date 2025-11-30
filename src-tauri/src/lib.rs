@@ -250,10 +250,11 @@ async fn net_usb_set_list_control(
 async fn net_usb_set_search_string(
     ip: String,
     list_id: String,
-    search_text: String
+    search_text: String,
+    index: Option<u32>
 ) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || {
-        yamaha_rs::net_usb_set_search_string(&ip, &list_id, &search_text, None)
+        yamaha_rs::net_usb_set_search_string(&ip, &list_id, &search_text, index)
     })
         .await
         .unwrap()
