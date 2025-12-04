@@ -1,8 +1,11 @@
 use futures::future::try_join_all;
 use log::debug;
 use tauri::async_runtime::spawn_blocking;
-use yamaha_rs::{DeviceFeatures, DeviceInfo, ListInfo, NetUsbPlayInfo, SignalInfo, YamahaDevice, ZoneProgramList, ZoneStatus};
 use yamaha_rs::enums::{ListControl, Playback, Repeat, Shuffle};
+use yamaha_rs::{
+    DeviceFeatures, DeviceInfo, ListInfo, NetUsbPlayInfo, SignalInfo, YamahaDevice, YpaoConfig,
+    ZoneProgramList, ZoneStatus,
+};
 
 #[tauri::command]
 async fn discover_devices() -> Vec<YamahaDevice> {
@@ -183,7 +186,10 @@ async fn net_usb_get_play_info(ip: String) -> Result<NetUsbPlayInfo, yamaha_rs::
 }
 
 #[tauri::command]
-async fn net_usb_set_playback(ip: String, playback: Playback) -> Result<(), yamaha_rs::error::Error> {
+async fn net_usb_set_playback(
+    ip: String,
+    playback: Playback,
+) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::net_usb_set_playback(&ip, playback))
         .await
         .unwrap()
@@ -222,11 +228,9 @@ async fn net_usb_get_list_info(
     ip: String,
     input: String,
     index: u32,
-    size: u32
+    size: u32,
 ) -> Result<ListInfo, yamaha_rs::error::Error> {
-    spawn_blocking(move || {
-        yamaha_rs::net_usb_get_list_info(&ip, &input, index, size, "en")
-    })
+    spawn_blocking(move || yamaha_rs::net_usb_get_list_info(&ip, &input, index, size, "en"))
         .await
         .unwrap()
 }
@@ -237,13 +241,13 @@ async fn net_usb_set_list_control(
     list_id: String,
     control_type: ListControl,
     index: Option<u32>,
-    zone: Option<String>
+    zone: Option<String>,
 ) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || {
         yamaha_rs::net_usb_set_list_control(&ip, &list_id, control_type, index, zone.as_deref())
     })
-        .await
-        .unwrap()
+    .await
+    .unwrap()
 }
 
 #[tauri::command]
@@ -251,66 +255,104 @@ async fn net_usb_set_search_string(
     ip: String,
     list_id: String,
     search_text: String,
-    index: Option<u32>
+    index: Option<u32>,
 ) -> Result<(), yamaha_rs::error::Error> {
-    spawn_blocking(move || {
-        yamaha_rs::net_usb_set_search_string(&ip, &list_id, &search_text, index)
-    })
+    spawn_blocking(move || yamaha_rs::net_usb_set_search_string(&ip, &list_id, &search_text, index))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_input(
-    ip: String,
-    input: String,
-    zone: String
-) -> Result<(), yamaha_rs::error::Error> {
+async fn set_input(ip: String, input: String, zone: String) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::set_input(&ip, &zone, &input))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_subwoofer_volume(ip: String, volume: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+async fn set_subwoofer_volume(
+    ip: String,
+    volume: i32,
+    zone: String,
+) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::set_subwoofer_volume(&ip, &zone, volume))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_dialogue_lift(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+async fn set_dialogue_lift(
+    ip: String,
+    value: i32,
+    zone: String,
+) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::set_dialogue_lift(&ip, &zone, value))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_dialogue_level(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+async fn set_dialogue_level(
+    ip: String,
+    value: i32,
+    zone: String,
+) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::set_dialogue_level(&ip, &zone, value))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_dts_dialogue_control(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+async fn set_dts_dialogue_control(
+    ip: String,
+    value: i32,
+    zone: String,
+) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::set_dts_dialogue_control(&ip, &zone, value))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_tone_bass(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+async fn set_tone_bass(
+    ip: String,
+    value: i32,
+    zone: String,
+) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::set_tone_bass(&ip, &zone, value))
         .await
         .unwrap()
 }
 
 #[tauri::command]
-async fn set_tone_treble(ip: String, value: i32, zone: String) -> Result<(), yamaha_rs::error::Error> {
+async fn set_tone_treble(
+    ip: String,
+    value: i32,
+    zone: String,
+) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::set_tone_treble(&ip, &zone, value))
         .await
         .unwrap()
+}
+
+#[tauri::command]
+async fn set_volume(ip: String, zone: String, volume: i32) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_volume(&ip, &zone, volume))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn get_ypao_config(ip: String) -> Result<YpaoConfig, yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::get_ypao_config(&ip))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_ypao_volume(ip: String, enabled: bool) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::set_ypao_volume(&ip, enabled))
+        .await.unwrap()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -353,7 +395,10 @@ pub fn run() {
             set_dialogue_level,
             set_dts_dialogue_control,
             set_tone_bass,
-            set_tone_treble
+            set_tone_treble,
+            set_volume,
+            get_ypao_config,
+            set_ypao_volume
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

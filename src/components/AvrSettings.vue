@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Zone, ZoneStatus} from "@/ipc/models.ts";
+import {DeviceFeatures, YpaoConfig, Zone, ZoneStatus} from "@/ipc/models.ts";
 import {useAppStore} from "@/stores/app.ts";
 import {
   setDialogueLevel,
@@ -8,11 +8,11 @@ import {
   setExtraBass,
   setPureDirect,
   setSoundProgram,
-  setSubwooferVolume, setToneBass, setToneTreble
+  setSubwooferVolume, setToneBass, setToneTreble, setYpaoVolume
 } from "@/ipc/yamaha.ts";
 import {debounce, capitalize} from "@/util.ts";
 
-const props = defineProps<{ zoneStatus?: ZoneStatus, deviceId: string, disabled?: boolean, zone?: Zone }>()
+const props = defineProps<{ zoneStatus?: ZoneStatus, deviceId: string, disabled?: boolean, zone?: Zone, features?: DeviceFeatures, ypao_config?: YpaoConfig }>()
 
 const app = useAppStore()
 const availablePrograms = ref<string[]>([])
@@ -29,6 +29,7 @@ const updatePureDirect = debounce(() => setPureDirect(props.deviceId, props.zone
 const updateExtraBass = debounce(() => setExtraBass(props.deviceId, props.zoneStatus?.extra_bass ?? false), DEBOUNCE_TIME)
 const updateEnhancer = debounce(() => setEnhancer(props.deviceId, props.zoneStatus?.enhancer ?? false), DEBOUNCE_TIME)
 const updateSoundProgram = debounce(() => props.zoneStatus ? setSoundProgram(props.deviceId, props.zoneStatus.sound_program) : 0, DEBOUNCE_TIME)
+const updateYpaoVolume = debounce(() => props.ypao_config ? setYpaoVolume(props.deviceId, props.ypao_config.ypao_volume) : 0, DEBOUNCE_TIME)
 const SLIDER_DEBOUNCE_TIME = 50
 const updateSubwooferVolume = debounce(() => props.zoneStatus ? setSubwooferVolume(props.deviceId, props.zoneStatus.subwoofer_volume) : 0, SLIDER_DEBOUNCE_TIME)
 const updateDialogLift = debounce(() => props.zoneStatus ? setDialogueLift(props.deviceId, props.zoneStatus.dialogue_lift) : 0, SLIDER_DEBOUNCE_TIME)
@@ -59,6 +60,7 @@ const CONTROL_RANGE_STEPS = [
 ]
 
 const rangeSteps = computed(() => props.zone?.range_step ?? [])
+const supportedFunctions = computed(() => props.features?.system.func_list ?? [])
 
 const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
 
@@ -92,6 +94,13 @@ const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
             <span>{{ capitalize(item.raw) }}</span>
           </template>
         </v-select>
+      </v-col>
+    </v-row>
+    <v-row align="center" no-gutters class="setting-row" v-if="supportedFunctions.includes('ypao_volume') && ypao_config">
+      <v-col>YPAO Volume</v-col>
+      <v-col v-if="zoneStatus">
+        <v-switch :disabled="disabled" hide-details density="compact" v-model="ypao_config.ypao_volume"
+                  @update:model-value="updateYpaoVolume"/>
       </v-col>
     </v-row>
     <v-row align="center" no-gutters class="setting-row">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {RangeStep, STEP_VOL, STEP_VOL_DB, STEP_VOL_NUMERIC, VOL_DB, VOL_NUMERIC, ZoneStatus} from "@/ipc/models.ts"
 import { debounce } from "@/util.ts"
-import { setMute, setVolumeDown, setVolumeUp } from "@/ipc/yamaha.ts"
+import {setMute, setVolumeDown, setVolumeUp, setZoneVolume} from "@/ipc/yamaha.ts"
 
 const props = defineProps<{
   zoneStatus?: ZoneStatus,
@@ -73,7 +73,11 @@ function animateVolume(target: number) {
   target = Math.round(target)
   if (!props.zoneStatus || holdTimer || target == props.zoneStatus.volume || !mousePressedOnVolumeSlider) return
   const delta = target > props.zoneStatus.volume ? 1 : -1
-  startHold(delta, target)
+
+  if (delta < 0) // If we want to quiet down, we can do so immediately
+      setZoneVolume(props.deviceId, target)
+  else // Turning the volume up to full all-of-a-sudden does not sound like such a fun time tho.
+    startHold(delta, target)
 }
 
 </script>

@@ -12,9 +12,12 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./components/AppFooter.vue')['default']
+    AppTitle: typeof import('./components/nav/AppTitle.vue')['default']
     AvrCard: typeof import('./components/AvrCard.vue')['default']
     AvrSettings: typeof import('./components/AvrSettings.vue')['default']
+    DeviceNav: typeof import('./components/nav/DeviceNav.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
+    IndexNav: typeof import('./components/nav/IndexNav.vue')['default']
     InputSelector: typeof import('./components/InputSelector.vue')['default']
     NetUsbListBrowser: typeof import('./components/NetUsbListBrowser.vue')['default']
     PlaybackCard: typeof import('./components/PlaybackCard.vue')['default']

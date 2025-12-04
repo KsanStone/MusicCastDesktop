@@ -1,5 +1,7 @@
 <template>
-  <v-main class="h-screen d-flex flex-column overflow-scroll">
+  <v-main class="h-screen d-flex flex-column overflow-y-scroll overflow-x-hidden">
+    <IndexNav v-if="route.name === '/'"/>
+    <DeviceNav v-else-if="route.name === '/device/[id]'"/>
     <v-container class="flex-grow-1 d-flex flex-column justify-center">
       <router-view v-slot="{ Component, route }">
         <transition name="slide-x" mode="out-in">
@@ -11,6 +13,7 @@
 </template>
 
 <script lang="ts" setup>
+  const route = useRoute()
 </script>
 
 <style>

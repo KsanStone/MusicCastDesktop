@@ -361,3 +361,7 @@ export function getListItemAttributes(item: NetUsbListItem): ListItemAttributes 
         hasArtwork: (attr & 0x10) !== 0,
     };
 }
+
+export interface YpaoConfig {
+    ypao_volume: boolean;
+}

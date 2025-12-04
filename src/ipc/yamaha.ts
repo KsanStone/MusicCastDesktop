@@ -1,10 +1,17 @@
 import {
     DeviceFeatures,
     DeviceInfo,
-    DiscoveredDevice, ListControlType, NetUsbListInfo, NetUsbPlayInfo, NetUsbRepeatMode, NetUsbShuffleMode, PlaybackCommand,
+    DiscoveredDevice,
+    ListControlType,
+    NetUsbListInfo,
+    NetUsbPlayInfo,
+    NetUsbRepeatMode,
+    NetUsbShuffleMode,
+    PlaybackCommand,
     Result,
     SignalInfo,
     StatusCode,
+    YpaoConfig,
     ZoneProgramList,
     ZoneStatus
 } from "./models.ts";
@@ -159,4 +166,16 @@ export async function setToneBass(ip: string, value: number, zone: string = 'mai
 
 export async function setToneTreble(ip: string, value: number, zone: string = 'main'): Promise<void> {
     return await invoke("set_tone_treble", { ip, value, zone });
+}
+
+export async function setZoneVolume(ip: string, volume: number, zone: string = 'main'): Promise<void> {
+    return await invoke("set_volume", { ip, volume, zone });
+}
+
+export async function getYpaoConfig(ip: string): Promise<YpaoConfig> {
+    return await invoke("get_ypao_config", { ip });
+}
+
+export async function setYpaoVolume(ip: string, enabled: boolean): Promise<void> {
+    return await invoke("set_ypao_volume", { ip, enabled });
 }
