@@ -121,6 +121,7 @@ const rangeStep = (id: string) => rangeSteps.value.find(x => x.id === id)
       <v-col v-if="zoneStatus">
         <v-slider :model-value="range.get ? range.get() : zoneStatus[range.id]" :min="rangeStep(range.id)!.min"
                   :max="rangeStep(range.id)!.max" :step="rangeStep(range.id)!.step"
+                  :disabled="disabled"
                   show-ticks="always"
                   thumb-label hide-details
                   @update:model-value="range.set ? range.set($event) : (zoneStatus[range.id] = $event); range.update()"

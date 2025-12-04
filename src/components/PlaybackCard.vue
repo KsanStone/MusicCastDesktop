@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import {NetUsbPlayInfo, SignalInfo, ZoneStatus} from "@/ipc/models.ts";
+import {DeviceFeatures, NetUsbPlayInfo, SignalInfo, Zone, ZoneStatus} from "@/ipc/models.ts";
 import {debounce} from "@/util.ts";
 import {setNetUsbPlayback, toggleNetUsbRepeat, toggleNetUsbShuffle} from "@/ipc/yamaha.ts";
-
-// TODO use the device features to figure out what api to use to fetch the playback info.
 
 const props = defineProps<{
   deviceIp: string,
   signalInfo?: SignalInfo
   zoneStatus?: ZoneStatus,
-  netUsbPlayInfo?: NetUsbPlayInfo
+  netUsbPlayInfo?: NetUsbPlayInfo,
+  playInfoType: string | undefined,
+  features?: DeviceFeatures,
+  zone?: Zone
 }>()
 
 const inputLabel = computed(() => {
@@ -72,7 +73,7 @@ const skipPrevious = debounce(() => setNetUsbPlayback(props.deviceIp, "previous"
 
 <template>
   <div class="text-center pa-3">
-    <div class="d-flex align-center justify-center flex-wrap">
+    <div class="d-flex align-center justify-center flex-wrap" v-if="playInfoType === 'netusb'">
       <v-img :src="netUsbPlayInfo?.albumart_url ? `http://${deviceIp}${netUsbPlayInfo.albumart_url}` : undefined"
              alt="playback cover art" class="rounded border-sm flex-grow-0" aspect-ratio="1" width="275px">
         <template v-slot:error>
@@ -127,6 +128,9 @@ const skipPrevious = debounce(() => setNetUsbPlayback(props.deviceIp, "previous"
           </div>
         </div>
       </div>
+    </div>
+    <div v-else>
+      <h2>{{ signalInfoText }}</h2>
     </div>
   </div>
 </template>

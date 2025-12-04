@@ -28,12 +28,17 @@ const isOn = computed(() => zoneStatus.value?.power === 'on')
 const zone = computed(() => features.value?.zone?.find((z: Zone) => z.id === "main"))
 const netUsbBrowser = computed(() => zoneStatus.value?.input && BROWSABLE_INPUTS.includes(zoneStatus.value?.input))
 
-// const inputInfo = computed(() => features.value?.system.input_list.find(x => x.id == zoneStatus.value?.input))
+const inputList = computed(() => {
+  if (!features.value || !zone.value) return []
+  return features.value.system.input_list.filter(x => zone.value!.input_list.includes(x.id))
+})
+const inputPlayInfoType = computed(() => inputList.value.find(x => x.id == zoneStatus.value?.input)?.play_info_type)
 
 async function refreshDeviceInfo() {
   zoneStatus.value = await getZoneStatus(deviceId)
   signalInfo.value = await getSignalInfo(deviceId)
-  netUsbPlayInfo.value = await getNetUsbPlayInfo(deviceId)
+  if (inputPlayInfoType.value === 'netusb')
+    netUsbPlayInfo.value = await getNetUsbPlayInfo(deviceId)
 }
 
 onMounted(() => {
@@ -61,8 +66,8 @@ function togglePower() {
     </v-card>
 
     <v-card>
-      <playback-card :device-ip="deviceId" :signal-info="signalInfo" :zone-status="zoneStatus"
-                     :net-usb-play-info="netUsbPlayInfo"/>
+      <playback-card :device-ip="deviceId" :signal-info="signalInfo" :zone-status="zoneStatus" :playInfoType="inputPlayInfoType"
+                     :net-usb-play-info="netUsbPlayInfo" :zone="zone" :features="features"/>
     </v-card>
 
     <div class="d-flex flex-row sm:flex-column w-100 ga-4 sm:ga-6 lg:ga-8">
