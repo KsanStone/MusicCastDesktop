@@ -1,12 +1,19 @@
 <script setup lang="ts">
 
 import {useAppStore} from "@/stores/app.ts";
-import {getNetUsbPlayInfo, getSignalInfo, getYpaoConfig, getZoneStatus, toggleZonePower} from "@/ipc/yamaha.ts";
+import {
+  getNetUsbPlayInfo,
+  getNetUsbRecentInfo,
+  getSignalInfo,
+  getYpaoConfig,
+  getZoneStatus,
+  toggleZonePower
+} from "@/ipc/yamaha.ts";
 import {
   BROWSABLE_INPUTS,
   DeviceFeatures,
   DeviceInfo, DiscoveredDevice,
-  NetUsbPlayInfo,
+  NetUsbPlayInfo, RecentInfoEntry,
   SignalInfo,
   YpaoConfig,
   Zone,
@@ -15,8 +22,8 @@ import {
 import VolumeControl from "@/components/VolumeControl.vue";
 import PlaybackCard from "@/components/PlaybackCard.vue";
 import NetUsbListBrowser from "@/components/NetUsbListBrowser.vue";
-import AppTitle from "@/components/nav/AppTitle.vue";
 import {useRouter} from "vue-router";
+import RecentEntries from "@/components/RecentEntries.vue";
 
 const app = useAppStore()
 const deviceId = useRoute().params.id as string
@@ -30,6 +37,7 @@ const signalInfo = ref<SignalInfo>();
 const features = ref<DeviceFeatures>();
 const netUsbPlayInfo = ref<NetUsbPlayInfo>();
 const ypaoConfig = ref<YpaoConfig>();
+const recent = ref<RecentInfoEntry[]>();
 
 const isOn = computed(() => zoneStatus.value?.power === 'on')
 const zone = computed(() => features.value?.zone?.find((z: Zone) => z.id === "main"))
@@ -49,6 +57,7 @@ async function refreshDeviceInfo() {
     netUsbPlayInfo.value = await getNetUsbPlayInfo(deviceId)
   if (supportedFunctions.value.includes("ypao_volume"))
     ypaoConfig.value = await getYpaoConfig(deviceId)
+  recent.value = await getNetUsbRecentInfo(deviceId)
 }
 
 onMounted(() => {
@@ -87,9 +96,13 @@ function togglePower() {
                      :net-usb-play-info="netUsbPlayInfo" :zone="zone" :features="features"/>
     </v-card>
 
+    <v-card v-if="recent">
+      <recent-entries :recent-info="recent" :disabled="zoneStatus?.power !== 'on'" :device-id="deviceId" />
+    </v-card>
+
     <div class="d-flex flex-row sm:flex-column w-100 ga-4 sm:ga-6 lg:ga-8">
-      <v-card class="w-50">
-        <net-usb-list-browser :device-id="deviceId" :input="zoneStatus!.input" v-if="netUsbBrowser"/>
+      <v-card class="w-50" v-if="netUsbBrowser">
+        <net-usb-list-browser :device-id="deviceId" :zoneStatus="zoneStatus!"/>
       </v-card>
       <v-card style="max-height: 564px" class="d-flex flex-column align-stretch"
               :class="{'w-50': netUsbBrowser}">

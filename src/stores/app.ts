@@ -2,6 +2,7 @@
 import {defineStore} from 'pinia'
 import {DeviceFeatures, DeviceInfo, DiscoveredDevice, Result, StatusCode} from "../ipc/models.ts";
 import {discoverDevices, getAllDeviceInfo, getFeatures, getZoneProgramList} from "../ipc/yamaha.ts";
+import {useUserData} from "@/stores/userDataStore.ts";
 
 export const useAppStore = defineStore('app', {
     state: () => ({
@@ -10,11 +11,15 @@ export const useAppStore = defineStore('app', {
         programList: {} as { [key: string]: string[] },
         deviceFeatures: {} as { [key: string]: DeviceFeatures },
         loaded: false,
-        deviceInfoLoaded: false
     }),
     getters: {
         getDeviceById(state) {
+            const userData = useUserData()
             return (id: string) => state.discoveredDevices.find(device => device.ip === id)
+                ?? userData.manuallyAddedDevices.map(x => ({
+                    name: '',
+                    ip: x
+                })).find(device => device.ip === id)
         },
         getDeviceInfo(state) {
             return (id: string) => state.deviceInfo[id]
@@ -24,6 +29,9 @@ export const useAppStore = defineStore('app', {
          */
         deviceManageable(state) {
             return (id: string) => !!state.deviceInfo[id]?.Ok
+        },
+        manageableDevices(state) {
+            return () => state.discoveredDevices.filter(device => state.deviceInfo[device.ip]?.Ok)
         }
     },
     actions: {
@@ -31,25 +39,30 @@ export const useAppStore = defineStore('app', {
             if (this.loaded) return
             try {
                 console.log("Discovering devices...")
-                this.discoveredDevices = await discoverDevices()
+                let newDevices = await discoverDevices()
+                for (let device of newDevices) {
+                    if (!this.discoveredDevices.find(d => d.ip === device.ip)) {
+                        this.discoveredDevices.push(device)
+                    }
+                }
                 console.log("Discovered devices:", this.discoveredDevices)
             } catch (ignored) {
                 console.error(ignored)
             } finally {
                 this.loaded = true
             }
+            console.log("Loading device info...")
             await this.loadDeviceInfo()
         },
         async loadDeviceInfo() {
-            if (this.deviceInfoLoaded) return
-            let ips = this.discoveredDevices.map(device => device.ip)
+            const userData = useUserData()
+            const discoveredIps = this.discoveredDevices.map(device => device.ip).filter(ip => !this.deviceInfo[ip])
+            const ips = [...new Set([...userData.manuallyAddedDevices, ...discoveredIps])]
             let info = await getAllDeviceInfo(ips)
             info.forEach((info, idx) => this.deviceInfo[ips[idx]] = info)
-            this.deviceInfoLoaded = true
         },
         async refresh() {
             this.loaded = false
-            this.deviceInfoLoaded = false
             await this.init()
         },
         async getProgramList(ip: string) {

@@ -3,8 +3,8 @@ use log::debug;
 use tauri::async_runtime::spawn_blocking;
 use yamaha_rs::enums::{ListControl, Playback, Repeat, Shuffle};
 use yamaha_rs::{
-    DeviceFeatures, DeviceInfo, ListInfo, NetUsbPlayInfo, SignalInfo, YamahaDevice, YpaoConfig,
-    ZoneProgramList, ZoneStatus,
+    DeviceFeatures, DeviceInfo, ListInfo, NetUsbPlayInfo, RecentInfo, SignalInfo, YamahaDevice,
+    YpaoConfig, ZoneProgramList, ZoneStatus,
 };
 
 #[tauri::command]
@@ -352,7 +352,29 @@ async fn get_ypao_config(ip: String) -> Result<YpaoConfig, yamaha_rs::error::Err
 #[tauri::command]
 async fn set_ypao_volume(ip: String, enabled: bool) -> Result<(), yamaha_rs::error::Error> {
     spawn_blocking(move || yamaha_rs::set_ypao_volume(&ip, enabled))
-        .await.unwrap()
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn net_usb_get_recent_info(ip: String) -> Result<RecentInfo, yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::net_usb_get_recent_info(&ip))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn set_play_position(ip: String, position: u32) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::net_usb_set_play_position(&ip, position))
+        .await
+        .unwrap()
+}
+
+#[tauri::command]
+async fn recall_recent_item(ip: String, zone: String, item: u32) -> Result<(), yamaha_rs::error::Error> {
+    spawn_blocking(move || yamaha_rs::net_usb_recall_recent(&ip, &zone, item))
+        .await
+        .unwrap()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -398,7 +420,10 @@ pub fn run() {
             set_tone_treble,
             set_volume,
             get_ypao_config,
-            set_ypao_volume
+            set_ypao_volume,
+            net_usb_get_recent_info,
+            set_play_position,
+            recall_recent_item
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

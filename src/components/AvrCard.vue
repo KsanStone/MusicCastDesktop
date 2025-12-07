@@ -6,11 +6,12 @@ defineProps<{
   device: DiscoveredDevice,
   info?: DeviceInfo,
   isOn?: boolean,
-  pageMode?: boolean
+  pageMode?: boolean,
+  canDelete?: boolean
 }>()
 
 const DEVICE_INFO_FIELDS = ['model_name', 'serial_number', 'system_version']
-const emit = defineEmits(['togglePower'])
+const emit = defineEmits(['togglePower', 'delete'])
 const togglePower = debounce(() => emit('togglePower'), 1000)
 
 </script>
@@ -22,7 +23,7 @@ const togglePower = debounce(() => emit('togglePower'), 1000)
         <v-icon icon="mdi-audio-video" :color="isOn ? 'primary' : undefined" size="48"></v-icon>
       </v-col>
       <v-col>
-        <v-card-title class="pt-0">{{info?.model_name ? info?.model_name + ' \u2022 ' : '' }}{{ device.name }}
+        <v-card-title class="pt-0">{{ info?.model_name ? info?.model_name + ' \u2022 ' : '' }}{{ device.name }}
         </v-card-title>
         <v-card-subtitle>{{ device.ip }}</v-card-subtitle>
       </v-col>
@@ -37,10 +38,12 @@ const togglePower = debounce(() => emit('togglePower'), 1000)
           <v-btn variant="text" icon="mdi-power" @click="togglePower"></v-btn>
         </div>
       </v-col>
-      <v-col align-self="center" v-if="info && !pageMode">
-        <div class="d-flex justify-end">
-          <v-btn :to="`/device/${device.ip}`" color="primary">Manage</v-btn>
-        </div>
+      <v-col v-if="canDelete" cols="1" align-self="center">
+        <v-btn icon="mdi-delete" @click="emit('delete')" color="error" :disabled="false"
+               class="pointer-events-auto"></v-btn>
+      </v-col>
+      <v-col align-self="center" v-if="info && !pageMode" cols="2">
+        <v-btn :to="`/device/${device.ip}`" color="primary">Manage</v-btn>
       </v-col>
     </v-row>
   </v-card>

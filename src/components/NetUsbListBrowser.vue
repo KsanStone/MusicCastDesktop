@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import {ref} from 'vue';
 import {controlNetUsbList, getNetUsbListInfo, searchNetUsbList} from "@/ipc/yamaha.ts";
-import {getListItemAttributes, NetUsbListItem} from "@/ipc/models.ts";
+import {getListItemAttributes, NetUsbListItem, ZoneStatus} from "@/ipc/models.ts";
 
 const props = defineProps<{
   deviceId: string,
-  enabled?: boolean,
-  input: string
+  zoneStatus: ZoneStatus,
 }>()
 
 const entries = ref<NetUsbListItem[]>([])
@@ -20,8 +19,14 @@ const depth = ref<number | null>(null)
 // When not null the search text prompt is active
 const indexToSearch = ref<number | null>(null)
 const searchQuery = ref('')
+const menuName = ref('')
 
-watch(props, () => resetList(), {deep: true})
+watch(
+  () => [props.zoneStatus.power, props.zoneStatus.input],
+  ([np, ni], [op, oi]) => {
+    if (np !== op || ni !== oi) resetList()
+  }
+)
 
 async function load({done}: { done: (status: 'ok' | 'empty' | 'loading' | 'error') => void }) {
   // If we already know the total and have reached it, stop.
@@ -35,11 +40,12 @@ async function load({done}: { done: (status: 'ok' | 'empty' | 'loading' | 'error
 
     const listInfo = await getNetUsbListInfo(
         props.deviceId,
-        props.input,
+        props.zoneStatus.input,
         referenceIndex.value,
         PAGE_SIZE
     )
     depth.value = listInfo.menu_layer
+    menuName.value = listInfo.menu_name
 
     // Update the total count from the API response
     totalItems.value = listInfo.max_line
@@ -110,6 +116,9 @@ async function doSearch() {
   <div>
     <div class="d-flex align-center pa-2">
       <v-btn @click="doReturn" icon="mdi-arrow-left" variant="text" :disabled="loading"></v-btn>
+      <span class="text-subtitle-1 ml-2" v-if="menuName !== null">
+        {{ menuName }}
+      </span>
       <span class="text-caption ml-2" v-if="totalItems !== null">
         {{ entries.length }} / {{ totalItems }} items
       </span>

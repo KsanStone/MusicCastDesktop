@@ -11,6 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddFixedAmpDialog: typeof import('./components/dialog/AddFixedAmpDialog.vue')['default']
+    AppBar: typeof import('./components/nav/AppBar.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     AppTitle: typeof import('./components/nav/AppTitle.vue')['default']
     AvrCard: typeof import('./components/AvrCard.vue')['default']
@@ -18,9 +20,12 @@ declare module 'vue' {
     DeviceNav: typeof import('./components/nav/DeviceNav.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     IndexNav: typeof import('./components/nav/IndexNav.vue')['default']
+    InputIcon: typeof import('./components/InputIcon.vue')['default']
     InputSelector: typeof import('./components/InputSelector.vue')['default']
+    Nav: typeof import('./components/nav/Nav.vue')['default']
     NetUsbListBrowser: typeof import('./components/NetUsbListBrowser.vue')['default']
     PlaybackCard: typeof import('./components/PlaybackCard.vue')['default']
+    RecentEntries: typeof import('./components/RecentEntries.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     VolumeControl: typeof import('./components/VolumeControl.vue')['default']

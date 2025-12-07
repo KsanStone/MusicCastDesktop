@@ -20,4 +20,16 @@ const app = createApp(App)
 
 registerPlugins(app)
 
-app.mount('#app')
+import {createVuetify} from "vuetify";
+
+const vuetify = createVuetify({
+  theme: {
+    defaultTheme: "dark",
+    themes: {
+      light: { dark: false },
+      dark: { dark: true }
+    }
+  }
+});
+
+app.use(vuetify).mount('#app')

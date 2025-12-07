@@ -7,7 +7,7 @@ import {
     NetUsbPlayInfo,
     NetUsbRepeatMode,
     NetUsbShuffleMode,
-    PlaybackCommand,
+    PlaybackCommand, RecentInfoEntry,
     Result,
     SignalInfo,
     StatusCode,
@@ -178,4 +178,16 @@ export async function getYpaoConfig(ip: string): Promise<YpaoConfig> {
 
 export async function setYpaoVolume(ip: string, enabled: boolean): Promise<void> {
     return await invoke("set_ypao_volume", { ip, enabled });
+}
+
+export async function getNetUsbRecentInfo(ip: string): Promise<RecentInfoEntry[]> {
+    return (await invoke("net_usb_get_recent_info", { ip }) as any).recent_info;
+}
+
+export async function setPlayPosition(ip: string, position: number): Promise<void> {
+    return await invoke("set_play_position", { ip, position });
+}
+
+export async function recallRecentItem(ip: string, item: number, zone: string = 'main'): Promise<void> {
+    return await invoke("recall_recent_item", { ip, item, zone });
 }

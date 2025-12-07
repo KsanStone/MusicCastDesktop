@@ -365,3 +365,11 @@ export function getListItemAttributes(item: NetUsbListItem): ListItemAttributes 
 export interface YpaoConfig {
     ypao_volume: boolean;
 }
+
+export interface RecentInfoEntry {
+    input: string,
+    text: string,
+    albumart_url: string,
+    play_count: number,
+    attribute: number,
+}

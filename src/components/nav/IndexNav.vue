@@ -5,10 +5,14 @@ const app = useAppStore()
 </script>
 
 <template>
-  <v-app-bar>
-    <app-title/>
-    <v-btn prepend-icon="mdi-refresh" @click="app.refresh()" variant="tonal" :disabled="!app.loaded">Re-discover devices</v-btn>
-  </v-app-bar>
+  <AppBar>
+    <div class="d-flex flex-row justify-end items-center ga-3">
+      <AddFixedAmpDialog />
+      <v-btn prepend-icon="mdi-refresh" @click="app.refresh()" variant="tonal" :disabled="!app.loaded">Re-discover
+        devices
+      </v-btn>
+    </div>
+  </AppBar>
 </template>
 
 <style scoped>
