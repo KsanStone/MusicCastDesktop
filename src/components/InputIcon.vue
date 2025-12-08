@@ -22,6 +22,7 @@ const iconName = computed(() => {
   if (id === 'usb') return 'mdi-usb'
   if (id === "bluetooth") return "mdi-bluetooth"
   if (id === 'phono') return 'mdi-record-player'
+  if (id === 'tuner' || id == 'net_radio') return 'mdi-radio'
   return 'mdi-network'
 })
 

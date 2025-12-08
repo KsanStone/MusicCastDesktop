@@ -20,7 +20,7 @@ const otherDevices = computed(() => app.discoveredDevices.filter((device: Discov
 
 <template>
   <div class="d-flex flex-column items-center ga-4 sm:ga-6 lg:ga-8 flex-grow-1">
-    <AvrCard v-for="device in userData.manuallyAddedDevices" :device="{ ip: device, name: '' }"
+    <AvrCard v-for="device in userData.manuallyAddedDevices" :device="{ ip: device, name: '' }" poll-for-status
              :info="app.getDeviceInfo(device)?.Ok" can-delete @delete="userData.deleteDevice(device)"/>
 
     <div class="d-flex align-center" v-if="userData.manuallyAddedDevices.length > 0">
@@ -34,7 +34,7 @@ const otherDevices = computed(() => app.discoveredDevices.filter((device: Discov
                    text="No Yamaha devices found in your network.">
     </v-empty-state>
 
-    <AvrCard v-for="device in manageableDevices" :device="device" :info="app.getDeviceInfo(device.ip)?.Ok"/>
+    <AvrCard v-for="device in manageableDevices" :device="device" :info="app.getDeviceInfo(device.ip)?.Ok" poll-for-status/>
     <div class="d-flex align-center" v-if="otherDevices.length > 0 && manageableDevices.length > 0">
       <v-divider class="flex-grow-1"></v-divider>
       <span class="mx-3 text-caption text-medium-emphasis" style="white-space: nowrap;">Other Yamaha Devices</span>
